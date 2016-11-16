@@ -10,7 +10,7 @@ Each of the modes illustrated below with more details.
 
 ## Big Data Mode
 
-![Alt text](./images/EigenGraph Data Layer (Big Data).png "EigenGraph Data Layer (Big Data)")
+![](EigenGraphBigData.png "EigenGraph Data Layer (Big Data)")
 
 1. Client-data processes GET requests as follows: 
    * GET object request will use caching solution and in case object is not cached it will use data store solution 
@@ -28,7 +28,7 @@ Each of the modes illustrated below with more details.
 
 ## Scalable Mode
 
-![Alt text](./images/EigenGraph Data Layer (scalable).png "EigenGraph Data Layer (Scalable)")
+![](EigenGraphScalable.png "EigenGraph Data Layer (Scalable)")
 
 1. Client-data processes GET requests as follows:
   * GET object request will use cache and in case object is not cached it will use data store
@@ -43,7 +43,7 @@ Each of the modes illustrated below with more details.
 
 ## Small Mode
 
-![Alt text](./images/EigenGraph Data Layer (small).png "EigenGraph Data Layer (Small)")
+![](EigenGraphSmall.png "EigenGraph Data Layer (Small)")
 
 1. Client-api works with client-data to retrieve / modify data
 * Client-data uses RethinkDB to store / get data
@@ -51,4 +51,3 @@ Each of the modes illustrated below with more details.
 * Micro services listen to RethinkDB changes feed, process changes with events
 * Sync service updates ES
 * Client-api uses ES to search for data
-
