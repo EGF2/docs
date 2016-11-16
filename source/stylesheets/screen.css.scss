@@ -335,7 +335,7 @@ html, body {
   }
 
   &>h1, &>h2, &>h3, &>h4, &>h5, &>h6, &>p, &>table, &>ul, &>ol, &>aside, &>dl {
-    margin-right: $examples-width;
+    //margin-right: $examples-width; Без третьего блока
     padding: 0 $main-padding;
     box-sizing: border-box;
     display: block;
@@ -624,4 +624,9 @@ html, body {
 
 .highlight, .highlight .w {
   background-color: $code-bg;
+}
+
+.tab { 
+	margin-left: 20px;
+	list-style-type: none;
 }
