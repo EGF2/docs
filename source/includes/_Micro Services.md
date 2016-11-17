@@ -131,18 +131,19 @@ Field validations are provided in the "custom_schemas", "common_fields" fields i
 
 Validation specification for a particular field can contain the following fields:
 
-1. `"type"` - required, can be one of the following strings: "string", "number", "date", "boolean", "object_id", "struct" and "array".
+1. `"type"` - required, can be one of the following strings: "string", "number", "integer", "date", "boolean", "object_id", "struct" and "array".
+* `"validator"` - optional, custom validation handler name.
 * `"required"` - optional boolean field, defaults to false.
 * `"default"` - optional field that contains default value for the field.
 * `"enum"` - optional array of strings. If present only values from this array can be assigned to the field.
 * `"min"` and `"max"` - optional fields that can be present for "string", "array" and "number" typed fields. For "string" these fields restrict string length. For "array" these fields restrict array size, for "number" - min and max values that can be stored.
 * `"schema"` - required for fields with type "struct" or "array:struct". Contains nested field validation specification for the struct. Can also contain a name of one of declared custom schemas (section "custom_schemas").
 * `"edit_mode"` - can take values "NC", "NE", "E". "NC" means field can not be set at creation time. "NE" means that field can not be changed. "E" means that the object is editable. In case "edit_mode" is not present it means that the field can’t be set at creation and also is not editable by users.
+* `"object_types"` - array of strings, required in case "type" is equal to "object_id"
 
-For fields with type "object_id" additional declaration of what types of objects are allowed to be referenced in this field can be added. For example: `"foo": { "type": "object_id:user,account" }` means that *foo* field must be object_id of User or Account objects.
-`"bar" : {"type": "object_id"}` means that *bar* field should be object_id of any object.
+For fields with type "object_id" field `"object_types"` should be provided. In case this field can hold any object type please use `"object_types": ["any"]`.
 
-Fields with type "array" should have additional declaration for the type of entities that can be stored within this array. Any type can be used in the declaration, except for "array". For example `"spam": {"type": "array:string"}` means that spam is an array of strings.
+Fields with type "array" should have additional declaration for the type of entities that can be stored within this array. It should be specified in `"schema"` field.
 
 #### ACL
 
@@ -184,7 +185,7 @@ In order to add custom validation please do the following:
 
 1. Implement a module that will perform custom validation inside of "controllers/validation/" folder. This module should implement one or several functions with signature: `function (val)` {} where *val* is the value of the field. Function should return true in case validation succeeded and false otherwise. Function (or functions, in case single module implements multiple validators) should be exported from the module.
 * Add a record of the form `"<type_name>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *validationRegistry* map in `"validation/index.js"`.
-* In **client-data** config, "graph" section, specify \<type_name> in field validation declaration in `'type"` field.
+* In **client-data** config, "graph" section, specify \<type_name> in field validation declaration in `"validation"` field.
 
 Example of a custom validator for `"email"` field: 
 
