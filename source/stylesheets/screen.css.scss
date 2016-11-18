@@ -33,6 +33,7 @@ html, body {
   background-color: $main-bg;
   height: 100%;
   -webkit-text-size-adjust: none; /* Never autoresize text */
+  font-family: 'Roboto', sans-serif;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -66,7 +67,7 @@ html, body {
   left: 0;
   bottom: 0;
   width: $nav-width;
-  background-color: $nav-bg;
+  background-color: #311e63;
   font-size: 13px;
   font-weight: bold;
 
@@ -89,7 +90,7 @@ html, body {
     position: relative;
 
     input {
-      background: $nav-bg;
+      background: #311e63;
       border-width: 0 0 1px 0;
       border-color: $search-box-border-color;
       padding: 6px 0 6px 20px;
@@ -110,6 +111,10 @@ html, body {
     }
   }
 
+  ul {
+
+  }
+
   img+.tocify {
     margin-top: $logo-margin;
   }
@@ -127,8 +132,6 @@ html, body {
       height: 30%;
       margin-bottom: 1em;
     }
-
-    @include embossed-bg;
 
     li {
       margin: 1em $nav-padding;
@@ -182,7 +185,7 @@ html, body {
   // in the table of contents.
   .tocify-subheader {
     display: none; // tocify will override this when needed
-    background-color: $nav-subitem-bg;
+    background-color: #311e63;
     font-weight: 500;
     .tocify-item>a {
       padding-left: $nav-padding + $nav-indent;
@@ -190,7 +193,6 @@ html, body {
     }
 
     // for embossed look:
-    @include embossed-bg;
     &>li:last-child {
       box-shadow: none; // otherwise it'll overflow out of the subheader
     }
@@ -200,6 +202,8 @@ html, body {
     padding: 1em 0;
     margin-top: 1em;
     border-top: 1px dashed $nav-footer-border-color;
+    font-size: 14px;
+    text-transform: uppercase;
 
     li,a {
       color: $nav-text;
@@ -327,11 +331,17 @@ html, body {
   // to place content above the dark box
   position: relative;
   z-index: 30;
+  background: #fff;
 
   &:after {
     content: '';
     display: block;
     clear: both;
+  }
+
+  &>h2, &>h1 {
+    color: #4a508a;
+    text-align: center;
   }
 
   &>h1, &>h2, &>h3, &>h4, &>h5, &>h6, &>p, &>table, &>ul, &>ol, &>aside, &>dl {
@@ -340,6 +350,7 @@ html, body {
     box-sizing: border-box;
     display: block;
     text-shadow: $main-embossed-text-shadow;
+
 
     @extend %left-col;
   }
@@ -362,7 +373,6 @@ html, body {
     margin-bottom: $h1-margin-bottom;
     margin-top: 2em;
     border-top: 1px solid #ddd;
-    background-image: linear-gradient(to bottom, #fff, #f9f9f9);
   }
 
   h1:first-child, div:first-child + h1 {
@@ -448,10 +458,13 @@ html, body {
   p, li, dt, dd {
     line-height: 1.6;
     margin-top: 0;
+    font-size: 14px;
   }
 
   img {
     max-width: 100%;
+    display: block;
+    margin: 0 auto;
   }
 
   code {
@@ -629,7 +642,7 @@ html, body {
   color: #f8f8f2;
 }
 
-.tab { 
+.tab {
 	margin-left: 20px;
 	list-style-type: none;
 }
