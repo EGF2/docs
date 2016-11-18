@@ -10,6 +10,15 @@ includes:
   - Third Party Tools
   - Pagination
   - Micro Services
+  - Utilities
+  - Data Store
+  - Graph API
+  - System Objects
+  - System ES Indexes
+  - Caching
+  - Queue Solution
+  - Suggested Documentation Format
+  - Deployment
 
 search: true
 ---

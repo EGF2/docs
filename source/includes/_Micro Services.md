@@ -72,13 +72,15 @@ None
   		},
 		"system_user": {
 			"code": "01", // object type code
-			"suppress_event": true // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"back_end_only": true,
 			"validations": { // for more info on validations please see Validations subsection
 			}
 		},
 		"session": {
 			"code": "02",
-        		"suppress_event": true
+        	"suppress_event": true,
+			"back_end_only": true
     		},
     		"user": {
         		"code": "03",
@@ -101,11 +103,12 @@ None
     		"event": {"code": "04"},
     		"job": {"code": "05"},
     		"file": {"code": "06"},
-    		"schedule": {"code": "07"},
-    		"schedule_event": {"code": "08"}
+    		"schedule": {"code": "07", "back_end_only": true},
+    		"schedule_event": {"code": "08", "back_end_only": true}
   	}
 }
 ```
+Please note that for brevity sake we are not showing the full client-data configuration here. Please see it in GitHub.
 
 #### Field Validations
 
