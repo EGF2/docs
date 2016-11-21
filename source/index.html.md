@@ -11,7 +11,6 @@ includes:
   - Pagination
   - Micro Services
   - Utilities
-  - Data Store
   - Graph API
   - System Objects
   - System ES Indexes
