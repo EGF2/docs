@@ -125,5 +125,3 @@ CREATE TABLE events (
     PRIMARY KEY (id)
 );
 ```
-
-
