@@ -2,9 +2,9 @@
 
 We will list all services that are present in the framework. For each service we will show public and internal endpoints, config parameters and extension points. Not all of the services will have something in all of the subsections. By "extension points" we mean an intended way of extending framework functionality. For example, all **logic** rules will be provided by clients using extension point. Internal endpoints are to be used by services, they are not exposed to the Internet, public endpoints are exposed to the Internet.
 
-## Client-Data
+## client-data
 
-This service will serve as a focal point for data exchange in the system. As all events in the system will have to go through client-data it should be fast, simple and horizontally scalable. It should be able to support all graph operations from either cache or data store. 
+This service will serve as a focal point for data exchange in the system. As all events in the system will have to go through **client-data** it should be fast, simple and horizontally scalable. It should be able to support all graph operations from either cache or data store.
 
 ### Internal Endpoints
 
@@ -72,13 +72,15 @@ None
   		},
 		"system_user": {
 			"code": "01", // object type code
-			"suppress_event": true // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"back_end_only": true,
 			"validations": { // for more info on validations please see Validations subsection
 			}
 		},
 		"session": {
 			"code": "02",
-        		"suppress_event": true
+        	"suppress_event": true,
+			"back_end_only": true
     		},
     		"user": {
         		"code": "03",
@@ -101,11 +103,12 @@ None
     		"event": {"code": "04"},
     		"job": {"code": "05"},
     		"file": {"code": "06"},
-    		"schedule": {"code": "07"},
-    		"schedule_event": {"code": "08"}
+    		"schedule": {"code": "07", "back_end_only": true},
+    		"schedule_event": {"code": "08", "back_end_only": true}
   	}
 }
 ```
+Please note that for brevity sake we are not showing the full client-data configuration here. Please see it in GitHub.
 
 #### Field Validations
 
@@ -183,7 +186,7 @@ In case built-in validations are not sufficient client can implement custom vali
 
 In order to add custom validation please do the following:
 
-1. Implement a module that will perform custom validation inside of "controllers/validation/" folder. This module should implement one or several functions with signature: `function (val)` {} where *val* is the value of the field. Function should return true in case validation succeeded and false otherwise. Function (or functions, in case single module implements multiple validators) should be exported from the module.
+1. Implement a module that will perform custom validation inside of "controllers/validation/" folder. This module should implement one or several functions with signature: `function (val) {}`` where *val* is the value of the field. Function should return true in case validation succeeded and false otherwise. Function (or functions, in case single module implements multiple validators) should be exported from the module.
 * Add a record of the form `"<type_name>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *validationRegistry* map in `"validation/index.js"`.
 * In **client-data** config, "graph" section, specify \<type_name> in field validation declaration in `"validation"` field.
 
@@ -212,7 +215,7 @@ And object validations will look like:
 }
 ```
 
-## Сlient-API
+## client-api
 ### Internal Endpoints
 
 None
@@ -262,7 +265,7 @@ To **delete** an edge use `DELETE /v1/graph/<src object ID>/<edge name>/<dst obj
 
 #### Search Endpoint
 
-**Client-api** provides a `GET /v1/search endpoint for searching`. The following parameters are supported:
+**client-api** provides a `GET /v1/search endpoint for searching`. The following parameters are supported:
 
 - `"q"` - textual query, optional. In case q is not specified all objects from an index will returned (paginated, of course).
 - `"fields"` - comma separated list of fields. Here you can list fields that the q query should be searched in.
@@ -345,7 +348,7 @@ function Unfollow(req) {
 module.exports.Unfollow = Unfollow;
 ```
 
-## Sync
+## sync
 In small and scalable modes this service is responsible for updating ES according to the changes happening in the system.
 
 ### Internal Endpoints
@@ -416,13 +419,13 @@ None
 	"kafka": {} // TODO Kafka parameters
 }
 ```
-"Elastic" section contains info on ES indexes and global ES settings. It is possible to specify ES settings on the index level using "settings" field. We take "settings" content without modifications and apply settings to ES.
+"elastic" section contains info on ES indexes and global ES settings. It is possible to specify ES settings on the index level using "settings" field. We take "settings" content without modifications and apply settings to ES.
 
-**Sync** supports automatic and custom index processing, for the brevity sake we will use "automatic index" and "custom index" terms to identify type of processing going forward. 
+**sync** supports automatic and custom index processing, for the brevity sake we will use "automatic index" and "custom index" terms to identify type of processing going forward.
 
 Adding custom indexes is described in Extension Points section below. 
 
-**Sync** will react to events related to an object specified in `"object_type"` field for automatic indexes (this field is ignored for custom indexes). Automatic handler presumes that object field names correspond directly to field names in ES index. I.e `File.created_at` field is mapped into `"created_at"` field in ES index. It is possible to override this by providing `"field_name"` parameter in field declaration. This feature is useful to support nested structures, for, example: `"state": {"type": "string", "index": "not_analyzed", "field_name": "address.state"}` will populate ES index field "state" using data from `"address.state"` nested object field.
+**sync** will react to events related to an object specified in `"object_type"` field for automatic indexes (this field is ignored for custom indexes). Automatic handler presumes that object field names correspond directly to field names in ES index. I.e `File.created_at` field is mapped into `"created_at"` field in ES index. It is possible to override this by providing `"field_name"` parameter in field declaration. This feature is useful to support nested structures, for, example: `"state": {"type": "string", "index": "not_analyzed", "field_name": "address.state"}` will populate ES index field "state" using data from `"address.state"` nested object field.
 
 ### Extension Points
 #### Custom Index Handler
@@ -455,7 +458,7 @@ function onPostOrganization(event) {
 }
 ```
 
-## Logic
+## logic
 This service contains business logic rules that can and should be executed in asynchronous mode.
 
 ### Internal Endpoints
@@ -491,7 +494,7 @@ Logic rules are implemented as handlers in **logic** service. In order to implem
 1. Implement a module that will handle events related to the rule inside of `"extra/"` folder (in **logic** service). This module should implement one or several functions with signature: `function (event) {}` that will perform the processing of the event. Function should return a promise with operation result. Function (or functions, in case single module implements multiple handlers) should be exported from the module.
 * Add a record of the form `"<method, e.g. POST, GET, PUT, DELETE> <object type or edge>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *handleRegistry* map in `"extra/index.js"`. Handlers from a single module will usually be specified for several records related to the events of interest for the custom index.
 
-## Job
+## job
 This service will execute long and/or heavy tasks asynchronously. It will listen to the system event queue and react to creation of Job objects. Number of simultaneous jobs that can be handled is specified in config option `"max_concurrent_jobs"`.
 
 ### Internal Endpoints
@@ -528,7 +531,7 @@ Jobs are implemented as handlers in **logic** service. In order to implement a r
 * Add a record of the form `"<job code>”: require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *handleRegistry* map in `"extra/index.js"`. Handlers from a single module will usually be specified for several records related to the events of interest for the custom index.
 
 
-## Pusher 
+## pusher
 Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc. 
 
 ### Internal Endpoints
@@ -550,7 +553,7 @@ We currently only support sending emails via SendGrid. SecretOrganization object
 
 ### Public Endpoints
 
-Pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has to be authorized using Authorization header with bearer token, e.g. `"Authorization Bearer <token>"`. All connections are pooled within the service and are available for custom event handlers. We use Primus and Primus Rooms to allow a user to be connected from multiple devices.
+pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has to be authorized using Authorization header with bearer token, e.g. `"Authorization Bearer <token>"`. All connections are pooled within the service and are available for custom event handlers. We use Primus and Primus Rooms to allow a user to be connected from multiple devices.
 
 ### Config
 
@@ -593,7 +596,7 @@ In order to implement a handler:
 1. Implement a module that will handle events related to the handler inside of `"extra/"` folder (in **pusher** service). This module should implement one or several functions with signature: `function (event) {}` that will perform the processing of the event. Processing usually means sending out a notification using some supported transport. Function should return a promise with operation result. Function (or functions, in case single module implements multiple handlers) should be exported from the module.
 * Add a record of the form `"<method, e.g. POST, GET, PUT, DELETE> <object type or edge>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *handleRegistry* map in `"extra/index.js"`. Handlers from a single module will usually be specified for several records related to the events of interest for the custom index.
 
-## Auth
+## auth
 ### Internal Endpoints
 Services will be able to get **session info** using `GET /v1/internal/session?token=<string, token value>`. **Auth** server will respond with Session object in case it can find one, 404 otherwise.
 
@@ -601,7 +604,7 @@ Services will be able to get **session info** using `GET /v1/internal/session?to
 
 This service is responsible for user related features, e.g. login, logout, password reset, email verification, registration, etc.
 
-**"Auth"** service will handle requests listed below.
+**"auth"** service will handle requests listed below.
 
 To **register** `POST /v1/register` the following JSON:
 
@@ -618,7 +621,7 @@ Service will return `{"token": "<string>"}` JSON in case of success. In other wo
 
 Server side should check if an email is taken yet. Upon registration the following will happen:
 
-- **Pusher** service will send an email with account verification ID.
+- **pusher** service will send an email with account verification ID.
 - User object will be created with `User.verified = false`.
 - New session will be created for the user.
 
@@ -679,7 +682,7 @@ In order to **resend** email with user’s email address verification `POST /v1/
 ### Extension Points
 None
 
-## File
+## file
 
 Service responsible for file management features, e.g. file upload, download, removal, etc 
 
@@ -697,7 +700,7 @@ I think we have internal
 
 ### Public Endpoints
 
-**File** server will handle requests listed below.
+**file** server will handle requests listed below.
 
 In order to **upload** a file to EGF S3 first call `GET /v1/new_image or GET /v1/new_file` passing `"mime_type"`, `"title"` and `"kind"` in query. Request will return File object JSON with a link that should be used for uploading image in `File.upload_url` field.
 
@@ -747,7 +750,7 @@ Client / server interactions:
 ### Extension Points
 None
 
-## Scheduler
+## scheduler
 This service creates ScheduleEvent objects as specified by Schedule objects. Services can create ScheduleEvent objects and listen to the system object queue to get notified when scheduled actions should be performed.
 
 ### Internal Endpoints

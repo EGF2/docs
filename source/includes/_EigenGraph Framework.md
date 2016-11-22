@@ -1,6 +1,6 @@
-# EigenGraph Framework (EGF) Modes
+# EigenGraph Framework V2 (EGF2) Modes
 
-EGF can be deployed in three different modes:
+EGF2 can be deployed in three different modes:
 
 1. Big Data - this mode will include Spark and either HDFS or S3 persistence layer in addition to a data store. Suitable for Big Data applications
 2. Scalable - this mode is suitable for applications with any load level but without ML and Big Data processing requirements.
