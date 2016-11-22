@@ -412,7 +412,7 @@ None
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
+		"db": "dev_egf",
 		"table": "event",
 		"offsettable": "event_offset"
 	},
@@ -782,5 +782,3 @@ None
 ```
 ### Extension Points
 None
-
-

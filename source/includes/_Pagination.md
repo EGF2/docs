@@ -9,9 +9,9 @@ Endpoints that return paginated results will use the following JSON wrapper:
 
 ```
 {
-	"results": [],
-	"first": <index of the first entry, int>, // this field will not be populated if this is the first page
-	"last": <index of the last entry, int>, // this field will not be populated in case this page is the last one
-	"count": <total number of objects, int>
+       	"results": [],
+       	"first": "<index or object ID of the first entry, string>",
+       	"last": "<index or object ID of the last entry, string>", // this field will not be populated in case this page is the last one
+       	"count": <total number of objects, int>
 }
 ```
