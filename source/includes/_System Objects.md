@@ -255,7 +255,7 @@ Object Code: 02
 ```json
 {
 	"object_type": "user",
-	"name": HumanName
+	"name": HumanName,
 	"email": "<string>",
 	"system": "<string, SystemUser object ID>",
 	"verified": Boolean

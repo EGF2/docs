@@ -15,54 +15,44 @@ We strive to minimize inter service dependencies as a conscious architectural ch
 		<tr>
 			<th>Service</th>
 			<th>Talks To</th>
-			<th>Config Parameters</th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr>
 			<td>client-api</td>
-			<td>Data Storage, QueueSolution</td>
-			<td></td>
+			<td>client-data, auth, Search Solution</td>
 		</tr>
 		<tr>
 			<td>client-data</td>
-			<td>required</td>
-			<td></td>
+			<td>Data Storage, Queue Solution</td>
 		</tr>
 		<tr>
 			<td>auth</td>
-			<td>client-data</td>
-			<td></td>
+			<td>client-data, pusher, Search Solution</td>
 		</tr>
 		<tr>
 			<td>sync</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data, Search Solution</td>
 		</tr>
 		<tr>
 			<td>pusher</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 		<tr>
 			<td>scheduler</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data, Search Solution</td>
 		</tr>
 		<tr>
 			<td>logic</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 		<tr>
 			<td>file</td>
-			<td>QueueSolution, client-data, S3</td>
-			<td></td>
+			<td>Queue Solution, client-data, S3, Search Solution</td>
 		</tr>
 		<tr>
 			<td>job</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 	</tbody>
 </table>

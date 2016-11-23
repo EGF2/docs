@@ -733,7 +733,10 @@ Client / server interactions:
 		"table": "event",
 		"offsettable": "event_offset"
 	},
-	"kafka": {} // TODO Kafka parameters
+	"kafka": {}, // TODO Kafka parameters
+	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        	"hosts": ["localhost:9200"]
+      	},
   	"kinds": {
     		"avatar": [
       			{"height": 200, "width": 200},
