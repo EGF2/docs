@@ -258,7 +258,8 @@ Object Code: 02
 	"name": HumanName,
 	"email": "<string>",
 	"system": "<string, SystemUser object ID>",
-	"verified": Boolean
+	"verified": Boolean,
+	"no_password": Boolean
 }
 ```
 Object Code: 03
@@ -291,6 +292,10 @@ Object Code: 03
 		<tr>
         	<td>"verified"</td>
         	<td>optional, Boolean, defaults to false</td>
+        </tr>
+        <tr>
+            <td>"no_password"</td>
+            <td>optional, Boolean</td>
         </tr>
 	</tbody>
 </table>

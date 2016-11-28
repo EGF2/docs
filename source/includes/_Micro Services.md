@@ -478,6 +478,9 @@ None
 	"log_level": "debug | info | warning",
 	"client-data": "<URL pointing to client-data service>",
 	"scheduler": "<URL pointing to scheduler service>", // we presume that logic may have some recurrent tasks that need scheduling
+	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        "hosts": ["localhost:9200"]
+    },
 	"queue": "kafka | rethinkdb",
 	"consumer-group": "logic",
 	"rethinkdb": {
@@ -680,7 +683,10 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	"log_level": "debug | info | warning",
 	"pusher": "http://localhost:2017", 
 	"client-data": "<URL pointing to client-data service>",
-  	"email_from": "<email from which notifications should be sent>"
+  	"email_from": "<email from which notifications should be sent>",
+  	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        "hosts": ["localhost:9200"]
+    }
 }
 ```
 ### Extension Points
