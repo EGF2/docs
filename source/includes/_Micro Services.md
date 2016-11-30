@@ -393,7 +393,6 @@ None
 				"file": { // index name, to be used with search endpoint
 					"settings": {} // ES settings local for this index
 					"object_type": "file",
-					"index": "file", // ES index name
 					"mapping": {
 						"id": {"type": "string", "index": "not_analyzed"},
 						"standalone": {"type": "boolean"},
@@ -403,7 +402,6 @@ None
 			"schedule": { // index name, to be used with search endpoint
 				"settings": {} // ES settings local for this index
 				"object_type": "schedule",
-				"index": "schedule", // ES index name
 				"mapping": {
 					"id": {"type": "string", "index": "not_analyzed"}
 				}
