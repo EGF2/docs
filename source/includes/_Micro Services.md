@@ -107,8 +107,12 @@ None
     		"schedule_event": {"code": "08", "back_end_only": true},
     		"objects": {
             	"secret_organization": "<object ID for the SecretOrganization object, string>"
-            }
-
+            },
+            "pagination": {
+             	"default_count": 25,
+             	"max_count": 50,
+             	"pagination_mode": "index | object"
+             }
   	}
 }
 ```
