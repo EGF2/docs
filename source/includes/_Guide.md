@@ -23,6 +23,7 @@ While pretty compact, this system will allow us to work with the following aspec
 
 We will start with domain modelling, proceed with EGF2 deployment and necessary back-end changes and will create web, iOS and Android apps that will work with the system.
 
+Full implementation of the back-end for the Guide system is available at our [BitBucket Guide project](https://bitbucket.org/account/user/egf2/projects/GUID).
 
 ## Domain Modeling
 
@@ -403,7 +404,7 @@ As you can see, **client-data** is the only service that talks to RethinkDB. Oth
 
 Before we start services we need to initialise DB. We can do it easily:
 
-`npm start --config /opt/client-data/config.json --init`
+`node index.js  --config /opt/client-data/config.json --init`
 
 Output of this task will include a line:
 
@@ -428,7 +429,7 @@ This will let **client-data** know object ID of `SecretOrganization` singleton.
 In order to start a service please do the following:
 
 * `cd /opt/<service>`
-* `npm start --config /opt/<service>/config.json`
+* `node index.js --config /opt/<service>/config.json`
 
 Where `<service>` takes values "client-data", "client-api", "auth". Please start **client-data** first, before other services.
 
@@ -587,7 +588,7 @@ We are ready to start **sync**:
 
 * `cd /opt/sync`
 * `npm install`
-* `npm start --config /opt/sync/config.json`
+* `node index.js --config /opt/sync/config.json`
 
 **sync** is running!
 
@@ -622,7 +623,7 @@ And start the service:
 
 * `cd /opt/file`
 * `npm install`
-* `npm start --config /opt/file/config.json`
+* `node index.js --config /opt/file/config.json`
 
 Let's allow **file** service endpoints with our NGINX, please add the following to the `/etc/nginx/api-endpoints` file:
 
@@ -678,7 +679,7 @@ After that we can start the service:
 
 * `cd /opt/file`
 * `npm install`
-* `npm start --config /opt/file/config.json`
+* `node index.js --config /opt/file/config.json`
 
 We now have all the services and tools in place that are necessary for the Guide system at this stage. The only services that were not deployed yet are:
 
