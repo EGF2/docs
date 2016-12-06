@@ -5,6 +5,7 @@ toc_footers:
   - <a href='https://github.com/tripit/slate'>Documentation Powered by Slate</a>
 
 includes:
+  - Guide
   - EigenGraph Framework
   - Third Party Tools
   - Pagination
