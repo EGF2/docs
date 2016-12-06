@@ -601,7 +601,7 @@ Let's configure file service:
     "port": 2018,
     "auth": "http://localhost:2016",
     "client-data": "http://localhost:8000",
-    "s3_bucket": "guide_images",
+    "s3_bucket": "egf2-guide-images",
     "queue": "rethinkdb",
     "consumer-group": "file",
     "rethinkdb": {
