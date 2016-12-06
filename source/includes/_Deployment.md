@@ -8,7 +8,7 @@ There is a single required parameter for each service to start - "config". This 
 
 Config files for services can be stored in S3 bucket or any other convenient location reachable by services. Services are not checking whether config has changed or not. In order to apply changes in config to a set of services sysops person will have to restart a service or restart an instance that runs the service.
 
-We strive to minimize inter service dependencies as a conscious architectural choice. There are some dependencies though, listed in the table below.
+We strive to minimize inter service dependencies, it is a conscious architectural choice. There are some dependencies though, listed in the table below.
 
 <table>
 	<thead>
