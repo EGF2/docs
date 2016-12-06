@@ -670,7 +670,7 @@ It is important to note that there is no SendGrid API key in config file here. I
 Please set value for key "sendgrid_api_key" with your SendGrid API key. It can be done as follows:
 
 ```
-curl -XPOST http://localhost:8000/v1/graph -d '{"object_type":"secret_organization","secret_keys":[{"key":"sendgrid_api_key","value":"<SecretOrganization object ID>"}]}'
+curl -XPUT -H "Content-Type: application/json" http://localhost:8000/v1/graph/<SecretOrganization object ID> -d '{"secret_keys":[{"key":"sendgrid_api_key","value":"<sendgrid_api_token>"}]}'
 ```
 
 Where `<SecretOrganization object ID>` can be found in **client-data** config, `"graph"/"objects"/"secret_organization"` field.
