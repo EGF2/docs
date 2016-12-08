@@ -18,6 +18,7 @@ includes:
   - Queue Solution
   - Suggested Documentation Format
   - Deployment
+  - Client Libraries
 
 search: true
 ---
