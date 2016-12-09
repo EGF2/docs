@@ -259,7 +259,8 @@ Object Code: 02
 	"email": "<string>",
 	"system": "<string, SystemUser object ID>",
 	"verified": Boolean,
-	"no_password": Boolean
+	"no_password": Boolean,
+	"date_of_birth": <string>
 }
 ```
 Object Code: 03
@@ -296,6 +297,10 @@ Object Code: 03
         <tr>
             <td>"no_password"</td>
             <td>optional, Boolean</td>
+        </tr>
+        <tr>
+        	<td>"date_of_birth"</td>
+        	<td>required, string, RFC3336</td>
         </tr>
 	</tbody>
 </table>
