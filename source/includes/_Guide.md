@@ -23,15 +23,15 @@ While pretty compact, this system will allow us to work with the following aspec
 
 We will start with domain modelling, proceed with EGF2 deployment and necessary back-end changes and will create web, iOS and Android apps that will work with the system.
 
-Full implementation of the back-end for the Guide system is available at our [BitBucket Guide project](https://bitbucket.org/account/user/egf2/projects/GUID).
+Full implementation of the back-end, iOS and Android apps are [available at GitHub](https://github.com/egf2-guide)
 
 ## Domain Modeling
 
 I think it makes sense to start with a User model and proceed from there.
 
-EGF2 comes with a `User` object pre-defined. We can expand it with more fields and edges if necessary, but we should not remove it unless we don't want to expose any user related APIs. 
+EGF2 comes with a `User` object pre-defined. We can expand it with more fields and edges if necessary, but we should not remove it unless we don't want to expose any user related APIs.
 
-Here is how it looks, in pseudo JSON: 
+Here is how it looks, in pseudo JSON:
 
 ```json
 User
@@ -69,7 +69,7 @@ AdminRole
 
 User's roles should be stored using `roles` edge of a `User` object. We usually refer to an edge using a simple notation `<Object type>/<edge name>`, for example `User/roles`. ACL support assumes that roles are store using this edge. We will use ACL in order to control access to objects and edges so we will use `User/roles` edge to store user's roles.
 
-While we are at the user's part of it let's also add edges for the following bit - `User/followers` and `User/follows`. 
+While we are at the user's part of it let's also add edges for the following bit - `User/followers` and `User/follows`.
 
 That's enough for the users part, let's get to the meat of the system - Posts.
 
@@ -106,7 +106,7 @@ We will connect `Posts` to `Comments` using `Post/comments` edge.
 One more thing. We need to decide how user's timeline should behave. There are at least two ways we can approach this:
 
 * For a particular user we can calculate timeline dynamically based on the list of users this particular user follows. This is feasible in case a single user follows not a large number of other users. If we get in to hundreds of follows this approach will be problematic due to performance issues.
-* We can add an edge `User/timeline` and create an edge every time a user that is being followed creates a `Post`. This approach will work well for GET requests but will require resources in case we get into situation when there are users with large number of followers. 
+* We can add an edge `User/timeline` and create an edge every time a user that is being followed creates a `Post`. This approach will work well for GET requests but will require resources in case we get into situation when there are users with large number of followers.
 
 We will take the second route as it scales better. There are a couple of consequences of this decision:
 
@@ -117,7 +117,7 @@ Both consequences can be avoided at the cost of additional processing, but I don
 
 Info about object and edges can (and I think should) be summarised in Model section of the system documentation, for more info see [Suggested Documentation Format](http://doc.eigengraph.com/#suggested-documentation-format) section of the EGF2 documentation.
 
-That's it for domain modelling, at least for now. In the next section I will show you how what needs to be done to implement this model with EGF2. 
+That's it for domain modelling, at least for now. In the next section I will show you how what needs to be done to implement this model with EGF2.
 
 
 ## Configuring Objects and Edges
@@ -151,6 +151,10 @@ Open `config.json` file from `client-data` service. First we need to adjust `Use
             "verified": {
                 "type": "boolean",
                 "default": false
+            },
+            "date_of_birth": {
+                "type": "string",
+                "edit_mode": "E"
             }
         },
         "edges": {
@@ -304,7 +308,7 @@ And the last object we will define is `Comment`:
     }
 ```
 
-We've got no edges defined for Comment objects. Comments are deletable and editable by creators. 
+We've got no edges defined for Comment objects. Comments are deletable and editable by creators.
 
 With the prepared configuration we can proceed to deploying the system!
 
@@ -339,7 +343,7 @@ bind=all
 server-tag=default
 server-tag=us_west_2
 server-tag=guide_db
-``` 
+```
 
 Please note that `server-tag=us_west_2` means that we are using an instance started in US-WEST-2 region of AWS.
 
@@ -387,7 +391,7 @@ To configure **auth** service please set the following parameters:
 }
 ```
 
-And **client-api** is configured with: 
+And **client-api** is configured with:
 
 ```json
 {
@@ -400,7 +404,7 @@ And **client-api** is configured with:
 }
 ```
 
-As you can see, **client-data** is the only service that talks to RethinkDB. Other services are using it for all data needs. 
+As you can see, **client-data** is the only service that talks to RethinkDB. Other services are using it for all data needs.
 
 Before we start services we need to initialise DB. We can do it easily:
 
@@ -479,25 +483,25 @@ server {
 ...
 ```
 
-We are adding one line - `include api-endpoints;`. 
+We are adding one line - `include api-endpoints;`.
 
 After that we are ready to start NGINX:
 
 * `chkconfig nginx on`
 * `service nginx start`
 
-That's it - the system is up! 
+That's it - the system is up!
 
 What have we got:
 
 1. Full Graph API - all endpoints are functional and know about our designed model.
 2. Registration, login, logout (without verification emails).
 
-I will continue with deployments in the next post - we will add ElasticSearch, **sync**, **pusher** and **file** services to the system. 
+I will continue with deployments in the next post - we will add ElasticSearch, **sync**, **pusher** and **file** services to the system.
 
 
 ## Deployment Part 2
-In the previous section we've got part of the services deployed along with RethinkDB and NGINX. 
+In the previous section we've got part of the services deployed along with RethinkDB and NGINX.
 
 Now we need to finalise our works with the addition of ElasticSearch and the rest of the services. We will have search and file related endpoints powered as a result, email notifications will be sent for the email verification and forgot password features.
 
@@ -532,7 +536,7 @@ And to start ElasticSearch please do:
 * `chkconfig elasticsearch on`
 * `service elasticsearch start`
 
-We need to add info on ES to the config files of our deployed and running services. 
+We need to add info on ES to the config files of our deployed and running services.
 
 This line should be added to the end of **client-api** and **auth** service configs:
 
@@ -580,7 +584,7 @@ To configure **sync** service please change the following parameters:
 }
 ```
 
-With the single instance deployment we are using RethinkDB changes feed feature as a system event bus. While it works great for development and testing please note that it is not a scalable solution. For production systems please use `"queue": "kafka"` setup instead. `"rethinkdb"` parameter holds config necessary for **sync** to connect to RethinkDB directly. 
+With the single instance deployment we are using RethinkDB changes feed feature as a system event bus. While it works great for development and testing please note that it is not a scalable solution. For production systems please use `"queue": "kafka"` setup instead. `"rethinkdb"` parameter holds config necessary for **sync** to connect to RethinkDB directly.
 
 The rest of the config we will leave intact for now. It contains system ES indexes that are used by some of the services we have. I will do a separate post on **sync** and ES indexes shortly.
 
@@ -674,7 +678,7 @@ curl -XPUT -H "Content-Type: application/json" http://localhost:8000/v1/graph/<S
 ```
 
 Where `<SecretOrganization object ID>` can be found in **client-data** config, `"graph"/"objects"/"secret_organization"` field.
- 
+
 After that we can start the service:
 
 * `cd /opt/file`
@@ -709,7 +713,8 @@ In order to add `Post` index please add the following text to the sync service c
     "object_type": "post",
     "mapping": {
         "id": {"type": "string", "index": "not_analyzed"},
-        "description": {"type": "string"}
+        "description": {"type": "string"},
+        "created_at": {"type": "date"}
     }
 }
 ...
@@ -994,4 +999,3 @@ Restart **logic** service.
 Even though EGF2 can not provide implementation for custom business rules for all systems and domains it does offer structure and a clear path for adding such rules. It suggests where implementation should live, how it should be connected to the rest of the system and it gives a recommendation on the way rules should be documented.
 
 In the next post we will look into web app creation.
-

@@ -23,7 +23,7 @@ EGF2 provides a set of client libraries that simplify working with the provided 
 
 ### Model Generation
 
-EGF2 model generator can be utilized to create model and other classes that simplify work with the EGF2 back-end. 
+EGF2 model generator can be utilized to create model and other classes that simplify work with the EGF2 back-end.
 
 Before generation please prepare a "settings.json" file in some folder with the following content:
 
@@ -38,7 +38,7 @@ Before generation please prepare a "settings.json" file in some folder with the 
 
 Get a `"client-data/config.json"` file from your repository and copy it to the same folder you have your `"settings.json"` file in. Copy EGF2GEN file to the same folder. Run EGF2GEN.
 
-Model generator is capable of producing Objective C and Swift code. Import generated files into your project. 
+Model generator is capable of producing Objective C and Swift code. Import generated files into your project.
 
 ### Error Handling
 
@@ -54,10 +54,10 @@ Completion = (Any?, NSError?) -> Void
 #### EGF2Graph
 
 EGF2Graph is main class of EGF2 library. It provides methods for authentication and operations on graph objects.
- 
+
 #### EGF2Graph Properties
 
-All properties of main EGF2Graph instance are being set during model generation. While there is no need to edit these properties it is still possible to do so, for example in case URL of the back-end has changed. 
+All properties of main EGF2Graph instance are being set during model generation. While there is no need to edit these properties it is still possible to do so, for example in case URL of the back-end has changed.
 
 <table>
 	<thead>
@@ -349,5 +349,213 @@ let expand = ["image","creator","comments(1)"]
 Graph.objects(forSource: "<user id>", edge: "posts", after:nil, expand:expand) { (objects, count, error) in
     guard let posts = objects as? [Post] else { return }
     // use posts
+}
+```
+
+### Auxiliary NSObject methods
+
+EGF2 iOS framework provides an extension for NSObject class which contains several useful methods for working with graph objects
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>func copyGraphObject() -> Self</td>
+			<td>Make a copy of graph object.</td>
+		</tr>
+		<tr>
+			<td>func isEqual(graphObject: NSObject) -> Bool</td>
+			<td>Checking if object is equal to another graph object.</td>
+		</tr>
+		<tr>
+			<td>func changesFrom(graphObject: NSObject) -> [String : Any]?</td>
+			<td>Get a dictionary of changed fields in comparison with another object.</td>
+		</tr>
+		<tr>
+			<td>var idsWithModelTypes: [String : NSObject.Type]</td>
+			<td>Contains objects' suffixes with appropriate classes</td>
+		</tr>
+	</tbody>
+</table>
+
+###### Example
+
+```js
+let currentUser: User = … // get user object where “name.given == Mark”
+let changedUser: User = currentUser.copyGraphObject() // a copy of current user object
+changedUser.name?.given = "Tom"
+
+
+if currentUser.isEqual(graphObject: changedUser) {
+    print("Objects are equal")
+}
+else {
+    print("Objects are different")
+}
+var dictionary = currentUser.changesFrom(graphObject: changedUser)!
+print(dictionary)  // ["name": ["given": "Mark"]]
+or
+var dictionary = changedUser.changesFrom(graphObject: currentUser)!
+print(dictionary)  // ["name": ["given": "Tom"]]
+```
+
+You can use objects and dictionary while working with graph objects:
+
+```js
+Graph.updateObject(withId: "<user id>", parameters: dictionary) { (_, error) in
+}
+or
+Graph.updateObject(withId: "<user id>", object: changedUser) { (_, error) in
+}
+```
+
+### Saving Data
+
+By default all changes are being saved every time your app receives the following notifications:
+
+1. UIApplicationDidEnterBackground
+2. UIApplicationWillTerminate
+
+So if your app suddenly crashes all unsaved changes will be lost.
+
+### Notification
+
+EGF2 library posts the following notifications when appropriate actions happen:
+
+<table>
+	<thead>
+		<tr>
+			<th>Objective-C notification names</th>
+			<th>Swift notification names</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>EGF2NotificationEdgeCreated</td>
+			<td>EGF2EdgeCreated</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationEdgeRemoved</td>
+			<td>EGF2EdgeRemoved</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationEdgeRefreshed</td>
+			<td>EGF2EdgeRefreshed</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationEdgePageLoaded</td>
+			<td>EGF2EdgePageLoaded</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationObjectCreated</td>
+			<td>EGF2ObjectCreated</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationObjectUpdated</td>
+			<td>EGF2ObjectUpdated</td>
+		</tr>
+		<tr>
+			<td>EGF2NotificationObjectDeleted</td>
+			<td>EGF2ObjectDeleted</td>
+		</tr>
+	</tbody>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			<th>Notification</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>EdgeCreated</td>
+			<td>A new edge was created</td>
+		</tr>
+		<tr>
+			<td>EdgeRemoved</td>
+			<td>An existing edge was removed</td>
+		</tr>
+		<tr>
+			<td>EdgeRefreshed</td>
+			<td>An edge was refreshed. All cached pages were dropped, the first page downloaded and cached.</td>
+		</tr>
+		<tr>
+			<td>EdgePageLoaded</td>
+			<td>The next page for some specific edge has been loaded.</td>
+		</tr>
+		<tr>
+			<td>ObjectCreated</td>
+			<td>The object has been created</td>
+		</tr>
+		<tr>
+			<td>ObjectUpdated</td>
+			<td>The object has been updated</td>
+		</tr>
+		<tr>
+			<td>ObjectDeleted</td>
+			<td>The object has been deleted</td>
+		</tr>
+	</tbody>
+</table>
+
+UserInfo object of each notification may contain different objects which can be obtained using the following keys:
+
+<table>
+	<thead>
+		<tr>
+			<th>Key name</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>EGF2EdgeInfoKey</td>
+			<td>Name of edge</td>
+		</tr>
+		<tr>
+			<td>EGF2SourceInfoKey</td>
+			<td>Id of object</td>
+		</tr>
+		<tr>
+			<td>EGF2ObjectInfoKey</td>
+			<td>Current object</td>
+		</tr>
+		<tr>
+			<td>EGF2EdgeObjectInfoKey</td>
+			<td>Object on edge</td>
+		</tr>
+		<tr>
+			<td>EGF2EdgeObjectsInfoKey</td>
+			<td>Objects on edge</td>
+		</tr>
+		<tr>
+			<td>EGF2EdgeObjectsCountInfoKey</td>
+			<td>Count of objects on edge</td>
+		</tr>
+	</tbody>
+</table>
+
+###### Example
+
+```js
+// Get notification object for specific graph object
+let object = Graph.notificationObject(forSource: id)
+
+// Want to get notifications only for an appropriate graph object
+// if object == nil then we will get notifications for all updated objects
+NotificationCenter.default.addObserver(self, selector: #selector(didUpdateObject(notification:)), name: .EGF2ObjectUpdated, object: object)
+
+…
+
+func didUpdateObject(notification: NSNotification) {
+    guard let user = notification.userInfo?[EGF2ObjectInfoKey] as? User else { return }
+    // user - the updated graph object
 }
 ```
