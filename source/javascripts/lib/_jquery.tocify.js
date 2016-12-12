@@ -365,7 +365,7 @@
 
             arr = $.grep(this.items, function (item) {
 
-                return item === self.text();
+                return item.toLowerCase() === self.text().toLowerCase();
 
             });
 

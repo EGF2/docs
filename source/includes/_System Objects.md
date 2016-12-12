@@ -214,11 +214,11 @@ Note: this object is used by "job" service and can be omitted in case "job" serv
 		</tr>
 		<tr>
 			<td>"completed"</td>
-			<td>optional, boolean, defaults to false</td>
+			<td>optional, Boolean, defaults to false</td>
 		</tr>
 		<tr>
 			<td>"read"</td>
-			<td>optional, boolean, defaults to false</td>
+			<td>optional, Boolean, defaults to false</td>
 		</tr>
 		<tr>
 			<td>"delete_at"</td>
@@ -255,9 +255,12 @@ Object Code: 02
 ```json
 {
 	"object_type": "user",
-	"name": HumanName
+	"name": HumanName,
 	"email": "<string>",
-	"system": "<string, SystemUser object ID>"
+	"system": "<string, SystemUser object ID>",
+	"verified": Boolean,
+	"no_password": Boolean,
+	"date_of_birth": <string>
 }
 ```
 Object Code: 03
@@ -287,6 +290,18 @@ Object Code: 03
 			<td>"system"</td>
 			<td>optional, SystemUser object ID</td>
 		</tr>
+		<tr>
+        	<td>"verified"</td>
+        	<td>optional, Boolean, defaults to false</td>
+        </tr>
+        <tr>
+            <td>"no_password"</td>
+            <td>optional, Boolean</td>
+        </tr>
+        <tr>
+        	<td>"date_of_birth"</td>
+        	<td>required, string, RFC3336</td>
+        </tr>
 	</tbody>
 </table>
 
@@ -320,7 +335,8 @@ Note: other fields can be added to this object as necessary.
 		}
 	}], NE, NC
 	"hosted": Boolean, // true in case file is stored on MBP S3, NE, NC
-	"uploaded": Boolean
+	"uploaded": Boolean,
+	"standalone": Boolean, NE, NC
 }
 ```
 Object Code: 06
@@ -386,6 +402,10 @@ Object Code: 06
 			<td>"uploaded"</td>
 			<td>optional, Boolean, defaults to false</td>
 		</tr>
+		<tr>
+        	<td>"standalone"</td>
+        	<td>optional, Boolean, defaults to false</td>
+        </tr>
 	</tbody>
 </table>
 

@@ -8,61 +8,51 @@ There is a single required parameter for each service to start - "config". This 
 
 Config files for services can be stored in S3 bucket or any other convenient location reachable by services. Services are not checking whether config has changed or not. In order to apply changes in config to a set of services sysops person will have to restart a service or restart an instance that runs the service.
 
-We strive to minimize inter service dependencies as a conscious architectural choice. There are some dependencies though, listed in the table below.
+We strive to minimize inter service dependencies, it is a conscious architectural choice. There are some dependencies though, listed in the table below.
 
 <table>
 	<thead>
 		<tr>
 			<th>Service</th>
 			<th>Talks To</th>
-			<th>Config Parameters</th>
 		</tr>
 	</thead>
 	<tbody>
 		<tr>
 			<td>client-api</td>
-			<td>Data Storage, QueueSolution</td>
-			<td></td>
+			<td>client-data, auth, Search Solution</td>
 		</tr>
 		<tr>
 			<td>client-data</td>
-			<td>required</td>
-			<td></td>
+			<td>Data Storage, Queue Solution</td>
 		</tr>
 		<tr>
 			<td>auth</td>
-			<td>client-data</td>
-			<td></td>
+			<td>client-data, pusher, Search Solution</td>
 		</tr>
 		<tr>
 			<td>sync</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data, Search Solution</td>
 		</tr>
 		<tr>
 			<td>pusher</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 		<tr>
 			<td>scheduler</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data, Search Solution</td>
 		</tr>
 		<tr>
 			<td>logic</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 		<tr>
 			<td>file</td>
-			<td>QueueSolution, client-data, S3</td>
-			<td></td>
+			<td>Queue Solution, client-data, S3, Search Solution</td>
 		</tr>
 		<tr>
 			<td>job</td>
-			<td>QueueSolution, client-data</td>
-			<td></td>
+			<td>Queue Solution, client-data</td>
 		</tr>
 	</tbody>
 </table>

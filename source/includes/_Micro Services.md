@@ -104,11 +104,19 @@ None
     		"job": {"code": "05"},
     		"file": {"code": "06"},
     		"schedule": {"code": "07", "back_end_only": true},
-    		"schedule_event": {"code": "08", "back_end_only": true}
+    		"schedule_event": {"code": "08", "back_end_only": true},
+    		"objects": {
+            	"secret_organization": "<object ID for the SecretOrganization object, string>"
+            },
+            "pagination": {
+             	"default_count": 25,
+             	"max_count": 50,
+             	"pagination_mode": "index | object"
+             }
   	}
 }
 ```
-Please note that for brevity sake we are not showing the full client-data configuration here. Please see it in GitHub.
+Please note that for brevity sake we are not showing the full client-data configuration here. Please see it on GitHub.
 
 #### Field Validations
 
@@ -143,6 +151,7 @@ Validation specification for a particular field can contain the following fields
 * `"schema"` - required for fields with type "struct" or "array:struct". Contains nested field validation specification for the struct. Can also contain a name of one of declared custom schemas (section "custom_schemas").
 * `"edit_mode"` - can take values "NC", "NE", "E". "NC" means field can not be set at creation time. "NE" means that field can not be changed. "E" means that the object is editable. In case "edit_mode" is not present it means that the field can’t be set at creation and also is not editable by users.
 * `"object_types"` - array of strings, required in case "type" is equal to "object_id"
+* `"auto_value"` - string, can take values: `"req.user"`, `"src.<field_name>"`. `"req.user"` will set the field with User object corresponding to the currently authenticated user. `"src.<field_name>"` is handy when an object is created on edge. client-api will take value of a field `"<field_name>"` and set this value into the field with `"auto_value"`.
 
 For fields with type "object_id" field `"object_types"` should be provided. In case this field can hold any object type please use `"object_types": ["any"]`.
 
@@ -174,8 +183,7 @@ Supported ACL rules:
 - any - allow access to any request.
 - registered_user - allow access to registered users.
 - self - allow access to own objects and edges - objects that have field `"user"` pointing to the current user.
-- \<role based access rule> - this rule is specified as a role name that user should have on User/roles edge. Example: CustomerRole, AdminRole, etc.
-- TODO: we need to provide info here on how clients will be able to specify custom ACL rules.
+- \<role based access rule> - this rule is specified as a role name that user should have on User/roles edge. Example: customer_role, admin_role, etc.
 
 ### Extension Points
 
@@ -389,7 +397,6 @@ None
 				"file": { // index name, to be used with search endpoint
 					"settings": {} // ES settings local for this index
 					"object_type": "file",
-					"index": "file", // ES index name
 					"mapping": {
 						"id": {"type": "string", "index": "not_analyzed"},
 						"standalone": {"type": "boolean"},
@@ -399,7 +406,6 @@ None
 			"schedule": { // index name, to be used with search endpoint
 				"settings": {} // ES settings local for this index
 				"object_type": "schedule",
-				"index": "schedule", // ES index name
 				"mapping": {
 					"id": {"type": "string", "index": "not_analyzed"}
 				}
@@ -412,8 +418,8 @@ None
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
 	"kafka": {} // TODO Kafka parameters
@@ -469,18 +475,21 @@ None
 
 ### Config
 
-```js
+```
 {
 	"log_level": "debug | info | warning",
 	"client-data": "<URL pointing to client-data service>",
 	"scheduler": "<URL pointing to scheduler service>", // we presume that logic may have some recurrent tasks that need scheduling
+	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        "hosts": ["localhost:9200"]
+    },
 	"queue": "kafka | rethinkdb",
 	"consumer-group": "logic",
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
 	"kafka": {} // TODO Kafka parameters
@@ -515,8 +524,8 @@ None
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
 	"kafka": {} // TODO Kafka parameters
@@ -572,8 +581,8 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
 	"kafka": {} // TODO Kafka parameters
@@ -676,7 +685,10 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	"log_level": "debug | info | warning",
 	"pusher": "http://localhost:2017", 
 	"client-data": "<URL pointing to client-data service>",
-  	"email_from": "<email from which notifications should be sent>"
+  	"email_from": "<email from which notifications should be sent>",
+  	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        "hosts": ["localhost:9200"]
+    }
 }
 ```
 ### Extension Points
@@ -729,11 +741,14 @@ Client / server interactions:
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
-	"kafka": {} // TODO Kafka parameters
+	"kafka": {}, // TODO Kafka parameters
+	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
+        	"hosts": ["localhost:9200"]
+      	},
   	"kinds": {
     		"avatar": [
       			{"height": 200, "width": 200},
@@ -773,8 +788,8 @@ None
 	"rethinkdb": {
 		"host": "localhost",
 		"port": "28015",
-		"database": "dev_egf",
-		"table": "event",
+		"db": "eigengraph",
+		"table": "events",
 		"offsettable": "event_offset"
 	},
 	"kafka": {} // TODO Kafka parameters
@@ -782,5 +797,3 @@ None
 ```
 ### Extension Points
 None
-
-
