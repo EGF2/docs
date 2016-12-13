@@ -141,7 +141,8 @@ Open `config.json` file from `client-data` service. First we need to adjust `Use
             "email": {
                 "type": "string",
                 "validator": "email",
-                "required": true
+                "required": true,
+                "unique": true
             },
             "system": {
                 "type": "object_id",
