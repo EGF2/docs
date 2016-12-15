@@ -624,6 +624,8 @@ Please note parameter `"s3_bucket"` - you need to use a name of an AWS S3 bucket
 
 We will leave parameter called `"kinds"` intact for now. What it allows us to do is to have predefined image resize groups. When a new image is created a kind can be specified, **file** service will then create necessary resizes automatically.
 
+In order to be able to resize images file service needs ImageMagick. To install the package please do `yum install ImageMagick`
+
 And start the service:
 
 * `cd /opt/file`
