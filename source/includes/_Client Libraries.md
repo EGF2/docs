@@ -260,10 +260,6 @@ Every object property is modelled with two properties within library object, one
 For example:
 
 ```js
-class Post: GraphObject {
-	var text: String?
-	var image: String? // id of image object
-}
 
 class Post: GraphObject {
 	var text: String?
@@ -386,7 +382,14 @@ EGF2 iOS framework provides an extension for NSObject class which contains sever
 ###### Example
 
 ```js
-let currentUser: User = … // get user object where “name.given == Mark”
+Graph.userObject { (object, error) in
+    guard let user = object as? User else { return }
+    self.currentUser = user
+    print(self.currentUser?.name?.given) // Mark
+}
+```
+
+```js
 let changedUser: User = currentUser.copyGraphObject() // a copy of current user object
 changedUser.name?.given = "Tom"
 
@@ -520,16 +523,16 @@ UserInfo object of each notification may contain different objects which can be 
 			<td>Name of edge</td>
 		</tr>
 		<tr>
-			<td>EGF2SourceInfoKey</td>
-			<td>Id of object</td>
+			<td>EGF2ObjectIdInfoKey</td>
+			<td>Id of current object</td>
 		</tr>
 		<tr>
 			<td>EGF2ObjectInfoKey</td>
 			<td>Current object</td>
 		</tr>
 		<tr>
-			<td>EGF2EdgeObjectInfoKey</td>
-			<td>Object on edge</td>
+			<td>EGF2EdgeObjectIdInfoKey</td>
+			<td>Id of object on edge</td>
 		</tr>
 		<tr>
 			<td>EGF2EdgeObjectsInfoKey</td>
@@ -555,7 +558,761 @@ NotificationCenter.default.addObserver(self, selector: #selector(didUpdateObject
 …
 
 func didUpdateObject(notification: NSNotification) {
-    guard let user = notification.userInfo?[EGF2ObjectInfoKey] as? User else { return }
+    guard let s = notification.userInfo?[EGF2ObjectInfoKey] as? User else { return }
     // user - the updated graph object
 }
 ```
+
+## Android
+
+
+EGF2 client library for Android is implemented using Kotlin and can be used from Java and <a href="http://kotlinlang.org/">Kotlin</a> code. Most of the samples in this documentation are given using Kotlin.
+
+<a href="https://realm.io/">Realm</a> is used for persistent caching purposes.
+
+### Installation
+
+Please install and use <a href="https://gradle.org/">Gradle</a> to compile the framework:
+
+compile "com.eigengraph.egf2:framework:<latest_version>"
+
+
+EGF2 model generator can be used to create models and other classes that simplify work with the EGF2 back-end. Please find below excerpts from build.gradle with necessary configuration options:
+
+```gradle
+buildscript {
+		repositories {
+				...
+				maven {
+						url "https://dl.bintray.com/dmitry-shingarev/egf2-android-client"
+				}
+				...
+		}
+		dependencies {
+				...
+				classpath 'com.eigengraph.egf2:gradle-plugin:<latest_version>'
+				…
+		}
+}
+	apply plugin: 'egf2-generator'
+```
+
+Generation parameters can be set in build.gradle file.
+
+```gradle
+EGF2 {
+		url = "",	// back-end server URL, required
+		urlPrefix = "",	// back-end server prefix, e.g. 'v1/', required
+		prefixForModels = "",	// prefix that will be used for your models, required
+		source = file("${project.rootDir}/schema/config.json") // path for config.json, required
+		modelForFile = "file" // model for the implementation of IEGF2File interface, required
+		kinds = ["avatar", "image"] // list of image kinds supported by the back-end, for more info please see file service section, optional
+		excludeModels = ["schedule"]	 // models that should be omitted in generation, optional
+}
+```
+
+Please note that Maven & Ant build systems are not supported.
+
+Model generator creates classes for working with the backend, configuration class that implements an interface IEGF2Config, and a class which offers GsonFactory and implements IEGF2GsonFactory interface.
+
+Custom Gson deserializers are created for generated model classes. It is possible to create your own custom deserializer. In order to do so please implement IEGF2GsonFactory interface.
+
+### Classes and APIs
+
+#### EGF2
+
+EGF2 is the main class of EGF2 library. It provides methods for authentication and operations on graph objects.
+
+Initialization of the EGF2 library in Java:
+
+```java
+EGF2.INSTANCE.builder(getApplicationContext())
+.config(<IEGF2Config>) // implementation IEGF2Config interface, eg generated class, required
+.gson(<IEGF2GsonFactory>)	// implementation IEGF2GsonFactory interface, eg generated class
+.types(<IEGF2MapTypesFactory>)
+.dbName(<String>) // the name of the database file cache
+.dbKey(<ByteArray>)	// encryption key of the database file cache
+.version(<long>) // the version of the database file cache
+.token(<String>) // token for authentication
+.debug(<Boolean>) // debug mode
+.build();
+```
+
+and in Kotlin:
+
+```kotlin
+EGF2.Builder(applicationContext)
+.config(<IEGF2Config>) // implementation IEGF2Config interface, eg generated class, required
+.gson(<IEGF2GsonFactory>)	// implementation IEGF2GsonFactory interface, eg generated class
+types(<IEGF2MapTypesFactory>) //implementation IEGF2MapTypesFactory interface, eg generated class
+.dbName(<String>) // the name of the database file cache
+.dbKey(<ByteArray>)	// encryption key of the database file cache
+.version(<long>) // the version of the database file cache
+.token(<String>) // token for authentication
+.debug(<Boolean>) // debug mode
+.build()
+```
+
+##### EGF2 Methods
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>fun register(body: RegisterModel): Observable<String></td>
+			<td>Register a new user. As well as ‘login’ method ‘register’ returns auth token, so you don’t need to call ‘login after ‘register’.</td>
+		</tr>
+		<tr>
+			<td>fun login(body: LoginModel): Observable<String></td>
+			<td>Log-in an existing user. Returns auth token.</td>
+		</tr>
+		<tr>
+			<td>fun verifyEmail(token: String): Observable<Any></td>
+			<td>Verify an email which was used while registering a new user.</td>
+		</tr>
+		<tr>
+			<td>fun forgotPassword(email: String): Observable<Any></td>
+			<td>Initiate a password restore process. Back-end sends a message with a secret token to the specified email.</td>
+		</tr>
+		<tr>
+			<td>fun resetPassword(body: ResetPasswordModel): Observable<Any></td>
+			<td>Reset the password of logged in user. User must use the secret token which was sent before.</td>
+		</tr>
+		<tr>
+			<td>fun changePassword(body: ChangePasswordModel): Observable<Any></td>
+			<td>Change password of logged in user.</td>
+		</tr>
+		<tr>
+			<td>fun resendEmailVerification(): Observable<Any></td>
+			<td>Prompts back-end to send another email with user’s email address verification.</td>
+		</tr>
+		<tr>
+			<td>fun logout(): Observable<Any></td>
+			<td>Logout. EGF2 library will clear token and cache even if logout with back-end was not successful.</td>
+		</tr>
+		<tr>
+			<td>fun <T : EGF2Model> getSelfUser(expand: String? = null, useCache: Boolean = true, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Get User object for currently logged in user.</td>
+		</tr>
+		<tr>
+			<td>fun <T : EGF2Model> getObjectByID(id: String, expand: String? = null, useCache: Boolean = true, clazz: Class<T>): 	Observable<T>
+			</td>
+			<td>Get object with specific id.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> getEdgeObjects(id: String, edge: String, after: EGF2Model?, count: Int, expand: String? = null, useCache: Boolean = true, class: Class<T>): Observable<EGF2Edge<T>>
+			</td>
+			<td>Get edge objects.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> getEdgeObject(idSrc: String, edge: String, idDst: String, expand: String? = null, useCache: Boolean = true, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Get edge object with specific id.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> createObject(body: Any, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Create a new object.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> createObjectOnEdge(id: String, edge: String, body: Any, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Create a new object on edge.</td>
+		</tr>
+		<tr>
+			<td>
+				fun createEdge(idSrc: String, edge: String, obj: EGF2Model): Observable<JsonObject>
+			</td>
+			<td>Create an edge for an existing object with id.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> updateObject(id: String, body: Any, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Update object.</td>
+		</tr>
+		<tr>
+			<td>
+				fun deleteObject(id: String): Observable<JsonObject>
+			</td>
+			<td>Delete an object with id.</td>
+		</tr>
+		<tr>
+			<td>
+				fun deleteObjectFromEdge(idSrc: String, edge: String, obj: EGF2Model): Observable<JsonObject>
+			</td>
+			<td>Delete an object with id from an edge.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> search(q: String, `object`: String, fields: String, filters: String, sort: String, range: String, expand: String): Observable<EGF2Search<T>>
+			</td>
+			<td>Search for objects according to parameters.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> uploadFile(file: String, mime: String, title: String, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Upload file data to server.</td>
+		</tr>
+		<tr>
+			<td>
+				fun <T : EGF2Model> uploadImage(file: String, mime: String, title: String, kind: String, clazz: Class<T>): Observable<T>
+			</td>
+			<td>Upload image data to server.</td>
+		</tr>
+		<tr>
+			<td>
+				fun clearCache()
+			</td>
+			<td>Clear cache</td>
+		</tr>
+		<tr>
+			<td>
+				fun compactCache()
+			</td>
+			<td>Compact cache - performs defragmentation on Realm DB file</td>
+		</tr>
+		<tr>
+			<td>
+				fun compactCache()
+			</td>
+			<td>Compact cache - performs defragmentation on Realm DB file</td>
+		</tr>
+		<tr>
+			<td>
+				fun isLoggedIn():Boolean
+			</td>
+			<td>Returns true if the user is authorized </td>
+		</tr>
+	</tbody>
+</table>
+
+##### EGF2 Methods
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>DEF_COUNT:Int</td>
+			<td>the default page size</td>
+		</tr>
+		<tr>
+			<td>MAX_COUNT:Int</td>
+			<td>maximum page size</td>
+		</tr>
+		<tr>
+			<td>paginationMode: PAGINATION_MODE</td>
+			<td>pagination mode, "index | object"</td>
+		</tr>
+	</tbody>
+</table>
+
+#### IEGF2Config
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>fun url(): String</td>
+			<td>Back-end URL</td>
+		</tr>
+		<tr>
+			<td>fun urlPrefix(): Stringfun urlPrefix(): Stringfun urlPrefix(): String</td>
+			<td>API URL prefix, e.g. “v1/”</td>
+		</tr>
+		<tr>
+			<td>fun defaultCount(): Int</td>
+			<td>Default page size (edge objects and search pagination)</td>
+		</tr>
+		<tr>
+			<td>fun maxCount(): Int</td>
+			<td>Max page size</td>
+		</tr>
+		<tr>
+			<td>fun paginationMode(): String</td>
+			<td>Pagination mode</td>
+		</tr>
+	</tbody>
+</table>
+
+#### IEGF2GsonFactory
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>fun create(): Gson</td>
+			<td>This method implementation should register custom deserializer that was generated by EGF2 model generation</td>
+		</tr>
+	</tbody>
+</table>
+
+#### IEGF2MapTypesFactory
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>fun create(): HashMap<String, java.lang.reflect.Type></td>
+			<td>Implement this method in order to prepare a map from type name to Type objects.</td>
+		</tr>
+	</tbody>
+</table>
+
+#### IEGF2File
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>fun getUploadUrl(): String</td>
+			<td>Get URL that should be used for file uploading</td>
+		</tr>
+		<tr>
+			<td>fun getId(): String</td>
+			<td>Get file ID</td>
+		</tr>
+	</tbody>
+</table>
+
+#### EGF2Bus
+
+EGF2Bus is publish/subscribe event bus
+
+<table>
+	<thead>
+		<tr>
+			<th>Notification</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>OBJECT_CREATED</td>
+			<td>New object is created</td>
+		</tr>
+		<tr>
+			<td>OBJECT_UPDATED</td>
+			<td>Existing object is updated</td>
+		</tr>
+		<tr>
+			<td>OBJECT_DELETED</td>
+			<td>Object is deleted</td>
+		</tr>
+		<tr>
+			<td>OBJECT_LOADED</td>
+			<td>An object was loaded from the back-end</td>
+		</tr>
+		<tr>
+			<td>EDGE_ADDED</td>
+			<td>New edge was added</td>
+		</tr>
+		<tr>
+			<td>EDGE_REMOVED</td>
+			<td>Edge was removed</td>
+		</tr>
+		<tr>
+			<td>EDGE_REFRESHED</td>
+			<td>Edge data was refreshed, first page cached</td>
+		</tr>
+		<tr>
+			<td>EDGE_PAGE_LOADED</td>
+			<td>New page of edge objects was loaded from back-end and cached</td>
+		</tr>
+	</tbody>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				fun subscribeForObject(event: EVENT, id: String?, onNext: Action1<ObjectEvent>): Subscription
+			</td>
+			<td>Listen for object events. </td>
+		</tr>
+		<tr>
+			<td>
+				fun subscribeForEdge(event: EVENT, id: String, edgeName: String, onNext: Action1<EdgeEvent>): Subscription
+			</td>
+			<td>Listen for edge events.</td>
+		</tr>
+		<tr>
+			<td>
+				fun post(event: EVENT, id: String?, obj: EGF2Model?)
+			</td>
+			<td>Post an object event </td>
+		</tr>
+		<tr>
+			<td>
+				fun post(event: EVENT, id: String, edgeName: String, edge: EGF2Edge<out EGF2Model>?)
+			</td>
+			<td>Post an edge event</td>
+		</tr>
+		<tr>
+			<td>
+				fun post(event: EVENT, id: String, edgeName: String, obj: EGF2Model)
+			</td>
+			<td>Post an event about edge object</td>
+		</tr>
+	</tbody>
+</table>
+
+##### ObjectEvent
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				event: EVENT
+			</td>
+			<td>Event type</td>
+		</tr>
+		<tr>
+			<td>
+				id: String?
+			</td>
+			<td>Event ID</td>
+		</tr>
+		<tr>
+			<td>
+				obj: EGF2Model?
+			</td>
+			<td>Object reference</td>
+		</tr>
+	</tbody>
+</table>
+
+##### EdgeEvent
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				event: EVENT
+			</td>
+			<td>Event type</td>
+		</tr>
+		<tr>
+			<td>
+				id: String
+			</td>
+			<td>Event ID</td>
+		</tr>
+		<tr>
+			<td>
+				edgeName: String
+			</td>
+			<td>Edge name</td>
+		</tr>
+		<tr>
+			<td>
+				edge: EGF2Edge<out EGF2Model>?
+			</td>
+			<td>Edge objects</td>
+		</tr>
+		<tr>
+			<td>
+				obj: EGF2Model?
+			</td>
+			<td>Edge object</td>
+		</tr>
+	</tbody>
+</table>
+
+#### RegisterModel
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				first_name: String
+			</td>
+			<td>First name</td>
+		</tr>
+		<tr>
+			<td>
+				last_name: String
+			</td>
+			<td>Last name</td>
+		</tr>
+		<tr>
+			<td>
+				email: String
+			</td>
+			<td>email address</td>
+		</tr>
+		<tr>
+			<td>
+				date_of_birth: String
+			</td>
+			<td>Date of birth</td>
+		</tr>
+		<tr>
+			<td>
+				password: String
+			</td>
+			<td>password</td>
+		</tr>
+	</tbody>
+</table>
+
+#### LoginModel
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				email: String
+			</td>
+			<td>email</td>
+		</tr>
+		<tr>
+			<td>
+				password: String
+			</td>
+			<td>password</td>
+		</tr>
+	</tbody>
+</table>
+
+#### ResetPasswordModel
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				reset_token: String
+			</td>
+			<td>Reset token</td>
+		</tr>
+		<tr>
+			<td>
+				new_password: String
+			</td>
+			<td>New password</td>
+		</tr>
+	</tbody>
+</table>
+
+#### ChangePasswordModel
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				old_password: String
+			</td>
+			<td>Old password</td>
+		</tr>
+		<tr>
+			<td>
+				new_password: String
+			</td>
+			<td>New password</td>
+		</tr>
+	</tbody>
+</table>
+
+#### EGF2Edge<T:EGF2Model>
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				count:Int
+			</td>
+			<td>Number of objects on this edge</td>
+		</tr>
+		<tr>
+			<td>
+				first: String
+			</td>
+			<td>Either object ID or index of the first object in this page (depends on pagination mode)</td>
+		</tr>
+		<tr>
+			<td>
+				last: String
+			</td>
+			<td>Either object ID or index of the last object in this page</td>
+		</tr>
+		<tr>
+			<td>
+				result: List<T>
+			</td>
+			<td>Edge objects</td>
+		</tr>
+	</tbody>
+</table>
+
+#### EGF2Search<T>
+
+<table>
+	<thead>
+		<tr>
+			<th>Property</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				count:Int
+			</td>
+			<td>Number of objects on this edge</td>
+		</tr>
+		<tr>
+			<td>
+				first: String
+			</td>
+			<td>Either object ID or index of the first object in this page (depends on pagination mode)</td>
+		</tr>
+		<tr>
+			<td>
+				last: String
+			</td>
+			<td>Either object ID or index of the last object in this page</td>
+		</tr>
+		<tr>
+			<td>
+				result: List<T>
+			</td>
+			<td>Edge objects</td>
+		</tr>
+	</tbody>
+</table>
+
+#### EGF2Model
+
+<table>
+	<thead>
+		<tr>
+			<th>Const</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				ME = "me"
+			</td>
+			<td>Reference to the authenticated self user </td>
+		</tr>
+	</tbody>
+</table>
+
+<table>
+	<thead>
+		<tr>
+			<th>Methods</th>
+			<th>Description</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>
+				un getId(): String
+			</td>
+			<td>Get object ID</td>
+		</tr>
+		<tr>
+			<td>
+				fun update(): JsonObject
+			</td>
+			<td>Update object</td>
+		</tr>
+		<tr>
+			<td>
+				fun create(): JsonObject
+			</td>
+			<td>Create new object</td>
+		</tr>
+	</tbody>
+</table>
+
+## Web
+
+Coming soon, stay tuned!

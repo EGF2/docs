@@ -46,7 +46,15 @@ None
 	"rethinkdb": { // RethinkDB config, should be present in case "storage" is equal to "rethinkdb". For more info on supported parameters please see RethinkDBDash driver docs. Parameters specified here are passed to the driver as is, without modifications.
 		"host": "localhost",
 		"db": "eigengraph"
-	}
+	},
+  "queue": "kafka | rethinkdb",
+     "kafka": {
+        "hosts": [
+          "localhost:9092"
+        ],
+        "client_id": "client-data",
+        "topic": "events"
+     },
 	"graph": { // graph config section, contains info on all objects, edges, ACLs and validations in the system
 		"custom_schemas": {
 			"address": {
@@ -152,6 +160,7 @@ Validation specification for a particular field can contain the following fields
 * `"edit_mode"` - can take values "NC", "NE", "E". "NC" means field can not be set at creation time. "NE" means that field can not be changed. "E" means that the object is editable. In case "edit_mode" is not present it means that the field can’t be set at creation and also is not editable by users.
 * `"object_types"` - array of strings, required in case "type" is equal to "object_id"
 * `"auto_value"` - string, can take values: `"req.user"`, `"src.<field_name>"`. `"req.user"` will set the field with User object corresponding to the currently authenticated user. `"src.<field_name>"` is handy when an object is created on edge. client-api will take value of a field `"<field_name>"` and set this value into the field with `"auto_value"`.
+* `"unique"` - boolean, in case true this field should be unique.
 
 For fields with type "object_id" field `"object_types"` should be provided. In case this field can hold any object type please use `"object_types": ["any"]`.
 
@@ -422,7 +431,13 @@ None
 		"table": "events",
 		"offsettable": "event_offset"
 	},
-	"kafka": {} // TODO Kafka parameters
+	"kafka": {
+    "hosts": [
+      "localhost:9092"
+    ],
+    "client-id": "sync",
+    "topic": "events"
+  }
 }
 ```
 "elastic" section contains info on ES indexes and global ES settings. It is possible to specify ES settings on the index level using "settings" field. We take "settings" content without modifications and apply settings to ES.

@@ -137,3 +137,14 @@ CREATE TABLE events (
     PRIMARY KEY (id)
 );
 ```
+
+#### Unique table
+
+This table stores values for model fields declared with “unique” = true
+
+```js
+CREATE TABLE unique (
+		id text,
+		PRIMARY KEY (id)
+);
+```
