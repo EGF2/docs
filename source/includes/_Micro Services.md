@@ -72,7 +72,7 @@ None
   		},
 		"system_user": {
 			"code": "01", // object type code
-			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object
 			"back_end_only": true,
 			"validations": { // for more info on validations please see Validations subsection
 			}
@@ -112,7 +112,9 @@ None
   	}
 }
 ```
-Please note that for brevity sake we are not showing the full client-data configuration here. Please see it on GitHub.
+Please note that for brevity sake we are not showing the full client-data configuration here, see it on GitHub.
+
+Object declaration can contain “volatile” boolean field. In case it is set to true objects of this type will be physically removed from a DB upon deletion. Otherwise DELETE requests mark objects with “deleted_at”, objects are not physically removed from the DB.
 
 #### Field Validations
 
@@ -194,7 +196,7 @@ In order to add custom validation please do the following:
 * Add a record of the form `"<type_name>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *validationRegistry* map in `"validation/index.js"`.
 * In **client-data** config, "graph" section, specify \<type_name> in field validation declaration in `"validation"` field.
 
-Example of a custom validator for `"email"` field: 
+Example of a custom validator for `"email"` field:
 
 ```js
 function CheckEmail(val) {
@@ -211,7 +213,7 @@ const validationRegistry = {
 }
 ```
 
-And object validations will look like: 
+And object validations will look like:
 
 ```js
 "validations": {
@@ -280,7 +282,7 @@ To **delete** an edge use `DELETE /v1/graph/<src object ID>/<edge name>/<dst obj
 
 Results are returned in paginated format, the same as results for getting edges. Full expansion functionality is supported for search requests as well, the same as for regular graph API requests.
 
-ACL rules are applied to the search results in the same way as they are applied to the results of graph API get edge requests. 
+ACL rules are applied to the search results in the same way as they are applied to the results of graph API get edge requests.
 
 ### Config
 
@@ -427,7 +429,7 @@ None
 
 **sync** supports automatic and custom index processing, for the brevity sake we will use "automatic index" and "custom index" terms to identify type of processing going forward.
 
-Adding custom indexes is described in Extension Points section below. 
+Adding custom indexes is described in Extension Points section below.
 
 **sync** will react to events related to an object specified in `"object_type"` field for automatic indexes (this field is ignored for custom indexes). Automatic handler presumes that object field names correspond directly to field names in ES index. I.e `File.created_at` field is mapped into `"created_at"` field in ES index. It is possible to override this by providing `"field_name"` parameter in field declaration. This feature is useful to support nested structures, for, example: `"state": {"type": "string", "index": "not_analyzed", "field_name": "address.state"}` will populate ES index field "state" using data from `"address.state"` nested object field.
 
@@ -536,7 +538,7 @@ Jobs are implemented as handlers in **logic** service. In order to implement a r
 
 
 ## pusher
-Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc. 
+Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc.
 
 ### Internal Endpoints
 
@@ -571,7 +573,7 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 	"auth": "<URL pointing to auth service>",
  	"template_host": "host": "<URL to the host to be used in templates>",
  	"ignored_domains": ["<domain name>"], // list of domains for which emails will not be sent, for debug purposes
-	"queue": "kafka | rethinkdb",	
+	"queue": "kafka | rethinkdb",
 	"consumer-group": "pusher",
 	"rethinkdb": {
 		"host": "localhost",
@@ -678,7 +680,7 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	"port": 2016,
   	"session_lifetime": 86400,
   	"log_level": "debug | info | warning",
-	"pusher": "http://localhost:2017", 
+	"pusher": "http://localhost:2017",
 	"client-data": "<URL pointing to client-data service>",
   	"email_from": "<email from which notifications should be sent>"
 }
@@ -688,7 +690,7 @@ None
 
 ## file
 
-Service responsible for file management features, e.g. file upload, download, removal, etc 
+Service responsible for file management features, e.g. file upload, download, removal, etc
 
 Service creates a new S3 bucket once per month to store uploaded files. Buckets have LIST operation disabled. File names are formed using UUID.
 
@@ -700,7 +702,7 @@ File uploads are partitioned in S3 as follows:
 This partitioning allows us to split all uploads more or less evenly without the need to create huge amount of buckets.
 
 ### Internal Endpoints
-I think we have internal 
+I think we have internal
 
 ### Public Endpoints
 
@@ -728,7 +730,7 @@ Client / server interactions:
   	"auth": "<URL to the auth service>",
 	"client-data": "<URL pointing to client-data service>",
   	"s3_bucket": "test_bucket",
-	"queue": "kafka | rethinkdb",	
+	"queue": "kafka | rethinkdb",
 	"consumer-group": "pusher",
 	"rethinkdb": {
 		"host": "localhost",
