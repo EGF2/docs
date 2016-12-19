@@ -112,7 +112,7 @@ None
   	}
 }
 ```
-Please note that for brevity sake we are not showing the full client-data configuration here, see it on GitHub.
+Please note that for brevity sake we are not showing the full client-data configuration here, <a href="https://github.com/egf2">see it on GitHub</a>.
 
 Object declaration can contain “volatile” boolean field. In case it is set to true objects of this type will be physically removed from a DB upon deletion. Otherwise DELETE requests mark objects with “deleted_at”, objects are not physically removed from the DB.
 
