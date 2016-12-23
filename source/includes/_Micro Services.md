@@ -46,15 +46,7 @@ None
 	"rethinkdb": { // RethinkDB config, should be present in case "storage" is equal to "rethinkdb". For more info on supported parameters please see RethinkDBDash driver docs. Parameters specified here are passed to the driver as is, without modifications.
 		"host": "localhost",
 		"db": "eigengraph"
-	},
-  "queue": "kafka | rethinkdb",
-     "kafka": {
-        "hosts": [
-          "localhost:9092"
-        ],
-        "client_id": "client-data",
-        "topic": "events"
-     },
+	}
 	"graph": { // graph config section, contains info on all objects, edges, ACLs and validations in the system
 		"custom_schemas": {
 			"address": {
@@ -80,7 +72,7 @@ None
   		},
 		"system_user": {
 			"code": "01", // object type code
-			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object 
+			"suppress_event": true, // in case "no_event" is present and set to true client-data will not produce any events related to this object
 			"back_end_only": true,
 			"validations": { // for more info on validations please see Validations subsection
 			}
@@ -115,16 +107,14 @@ None
     		"schedule_event": {"code": "08", "back_end_only": true},
     		"objects": {
             	"secret_organization": "<object ID for the SecretOrganization object, string>"
-            },
-            "pagination": {
-             	"default_count": 25,
-             	"max_count": 50,
-             	"pagination_mode": "index | object"
-             }
+            }
+
   	}
 }
 ```
-Please note that for brevity sake we are not showing the full client-data configuration here. Please see it on GitHub.
+Please note that for brevity sake we are not showing the full client-data configuration here, <a href="https://github.com/egf2">see it on GitHub</a>.
+
+Object declaration can contain “volatile” boolean field. In case it is set to true objects of this type will be physically removed from a DB upon deletion. Otherwise DELETE requests mark objects with “deleted_at”, objects are not physically removed from the DB.
 
 #### Field Validations
 
@@ -160,7 +150,6 @@ Validation specification for a particular field can contain the following fields
 * `"edit_mode"` - can take values "NC", "NE", "E". "NC" means field can not be set at creation time. "NE" means that field can not be changed. "E" means that the object is editable. In case "edit_mode" is not present it means that the field can’t be set at creation and also is not editable by users.
 * `"object_types"` - array of strings, required in case "type" is equal to "object_id"
 * `"auto_value"` - string, can take values: `"req.user"`, `"src.<field_name>"`. `"req.user"` will set the field with User object corresponding to the currently authenticated user. `"src.<field_name>"` is handy when an object is created on edge. client-api will take value of a field `"<field_name>"` and set this value into the field with `"auto_value"`.
-* `"unique"` - boolean, in case true this field should be unique.
 
 For fields with type "object_id" field `"object_types"` should be provided. In case this field can hold any object type please use `"object_types": ["any"]`.
 
@@ -207,7 +196,7 @@ In order to add custom validation please do the following:
 * Add a record of the form `"<type_name>": require("./<module_file_name>").<optional, function name in case module exports multiple functions>` to the *validationRegistry* map in `"validation/index.js"`.
 * In **client-data** config, "graph" section, specify \<type_name> in field validation declaration in `"validation"` field.
 
-Example of a custom validator for `"email"` field: 
+Example of a custom validator for `"email"` field:
 
 ```js
 function CheckEmail(val) {
@@ -224,7 +213,7 @@ const validationRegistry = {
 }
 ```
 
-And object validations will look like: 
+And object validations will look like:
 
 ```js
 "validations": {
@@ -293,7 +282,27 @@ To **delete** an edge use `DELETE /v1/graph/<src object ID>/<edge name>/<dst obj
 
 Results are returned in paginated format, the same as results for getting edges. Full expansion functionality is supported for search requests as well, the same as for regular graph API requests.
 
-ACL rules are applied to the search results in the same way as they are applied to the results of graph API get edge requests. 
+ACL rules are applied to the search results in the same way as they are applied to the results of graph API get edge requests.
+
+##### Miscellaneous
+
+[TO BE IMPLEMENTED IN V0.2.0]
+
+Mobile client applications can use app version endpoint by calling GET /v1/version?app_id=<some app ID>&version=<current installed version of the app>. Server will respond with JSON:
+
+{
+	“latest”: “<string>”, // latest available version of the app
+	“update_mode”: “now | period | recommended”,
+	“force_update_at”: “<string, RFC3339>”
+}
+
+This endpoint can be called by client apps once per day. Received JSON should be interpreted as follows:
+In case “latest” string is equal to the current installed version of the app fields “update_mode” and “force_update_at” will not be present. No action is required
+In case “update_mode” is present and equal to “now” the app should display a message to the user. When message is read the app should quit
+In case “update_mode” is equal to “period” the app should display a message informing the user that the app should be updated before “force_update_at” date. After message is presented the app should continue as usual.
+In case “update_mode” is “recommended” the app should display a message and them continue as usual.
+
+**client-api** should use “graph/objects” section of client-data config in order to obtain references to MobileClient objects. These objects should be used in order to answer client requests.
 
 ### Config
 
@@ -406,6 +415,7 @@ None
 				"file": { // index name, to be used with search endpoint
 					"settings": {} // ES settings local for this index
 					"object_type": "file",
+					"index": "file", // ES index name
 					"mapping": {
 						"id": {"type": "string", "index": "not_analyzed"},
 						"standalone": {"type": "boolean"},
@@ -415,6 +425,7 @@ None
 			"schedule": { // index name, to be used with search endpoint
 				"settings": {} // ES settings local for this index
 				"object_type": "schedule",
+				"index": "schedule", // ES index name
 				"mapping": {
 					"id": {"type": "string", "index": "not_analyzed"}
 				}
@@ -431,20 +442,14 @@ None
 		"table": "events",
 		"offsettable": "event_offset"
 	},
-	"kafka": {
-    "hosts": [
-      "localhost:9092"
-    ],
-    "client-id": "sync",
-    "topic": "events"
-  }
+	"kafka": {} // TODO Kafka parameters
 }
 ```
 "elastic" section contains info on ES indexes and global ES settings. It is possible to specify ES settings on the index level using "settings" field. We take "settings" content without modifications and apply settings to ES.
 
 **sync** supports automatic and custom index processing, for the brevity sake we will use "automatic index" and "custom index" terms to identify type of processing going forward.
 
-Adding custom indexes is described in Extension Points section below. 
+Adding custom indexes is described in Extension Points section below.
 
 **sync** will react to events related to an object specified in `"object_type"` field for automatic indexes (this field is ignored for custom indexes). Automatic handler presumes that object field names correspond directly to field names in ES index. I.e `File.created_at` field is mapped into `"created_at"` field in ES index. It is possible to override this by providing `"field_name"` parameter in field declaration. This feature is useful to support nested structures, for, example: `"state": {"type": "string", "index": "not_analyzed", "field_name": "address.state"}` will populate ES index field "state" using data from `"address.state"` nested object field.
 
@@ -495,9 +500,6 @@ None
 	"log_level": "debug | info | warning",
 	"client-data": "<URL pointing to client-data service>",
 	"scheduler": "<URL pointing to scheduler service>", // we presume that logic may have some recurrent tasks that need scheduling
-	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
-        "hosts": ["localhost:9200"]
-    },
 	"queue": "kafka | rethinkdb",
 	"consumer-group": "logic",
 	"rethinkdb": {
@@ -556,7 +558,48 @@ Jobs are implemented as handlers in **logic** service. In order to implement a r
 
 
 ## pusher
-Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc. 
+Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc.
+
+[TO BE SUPPORTED IN V0.2.0]
+
+Client applications can subscribe for notifications based on:
+Object ID
+Particular edge, represented as source object ID / edge name pair
+
+In order to subscribe for notifications please send the following JSON via WebSockets connection:
+
+```js
+{
+		“subscribe”: [
+				{ “object_id”: “<string>” },
+				{ “edge”:
+						{
+						“source”: “<string>”,
+								“name”: “<string>”
+						}
+				}				
+		]			
+}
+```
+Subscription that is mentioned in the message will be added to the list of subscriptions for this client.
+
+It is also possible to cancel subscription for an object or an edge:
+
+```js
+{
+	“unsubscribe”: [
+			{ “object_id”: “<string>” },
+			{ “edge”:
+					{
+					“source”: “<string>”,
+						“name”: “<string>”
+					}
+			}
+	]
+}
+```
+
+Note: In case connection is dropped all subscriptions are lost. When connection is restored client should renew subscriptions.
 
 ### Internal Endpoints
 
@@ -591,7 +634,7 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 	"auth": "<URL pointing to auth service>",
  	"template_host": "host": "<URL to the host to be used in templates>",
  	"ignored_domains": ["<domain name>"], // list of domains for which emails will not be sent, for debug purposes
-	"queue": "kafka | rethinkdb",	
+	"queue": "kafka | rethinkdb",
 	"consumer-group": "pusher",
 	"rethinkdb": {
 		"host": "localhost",
@@ -698,12 +741,9 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	"port": 2016,
   	"session_lifetime": 86400,
   	"log_level": "debug | info | warning",
-	"pusher": "http://localhost:2017", 
+	"pusher": "http://localhost:2017",
 	"client-data": "<URL pointing to client-data service>",
-  	"email_from": "<email from which notifications should be sent>",
-  	"elastic": { // ElasticSearch parameters. Passed to the ElasticSearch driver without modifications.
-        "hosts": ["localhost:9200"]
-    }
+  	"email_from": "<email from which notifications should be sent>"
 }
 ```
 ### Extension Points
@@ -711,7 +751,7 @@ None
 
 ## file
 
-Service responsible for file management features, e.g. file upload, download, removal, etc 
+Service responsible for file management features, e.g. file upload, download, removal, etc
 
 Service creates a new S3 bucket once per month to store uploaded files. Buckets have LIST operation disabled. File names are formed using UUID.
 
@@ -723,7 +763,7 @@ File uploads are partitioned in S3 as follows:
 This partitioning allows us to split all uploads more or less evenly without the need to create huge amount of buckets.
 
 ### Internal Endpoints
-I think we have internal 
+I think we have internal
 
 ### Public Endpoints
 
@@ -751,7 +791,7 @@ Client / server interactions:
   	"auth": "<URL to the auth service>",
 	"client-data": "<URL pointing to client-data service>",
   	"s3_bucket": "test_bucket",
-	"queue": "kafka | rethinkdb",	
+	"queue": "kafka | rethinkdb",
 	"consumer-group": "pusher",
 	"rethinkdb": {
 		"host": "localhost",

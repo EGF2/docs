@@ -40,7 +40,7 @@ In case API is consumed with the help of EGF2 mobile client libraries the follow
 </table>
 
 
-## HumanName 
+## HumanName
 
 ```json
 {
@@ -109,7 +109,7 @@ In case API is consumed with the help of EGF2 mobile client libraries the follow
 	"crearted_at": <number, unix timestamp>
 }
 ```
-Object Code: 04
+Object Code: Z4
 
 <u>Field validations:</u>
 
@@ -165,7 +165,7 @@ Object Code: 04
 </table>
 
 
-## Job 
+## Job
 
 ```json
 {
@@ -179,7 +179,7 @@ Object Code: 04
 	"delete_at": "<string>"
 }
 ```
-Object Code: 05
+Object Code: Z5
 
 Note: this object is used by "job" service and can be omitted in case "job" service is not deployed.
 
@@ -236,7 +236,7 @@ Note: this object is used by "job" service and can be omitted in case "job" serv
 	"service_ids": ["string formatted as <service prefix, e.g. fb, google>:<service user ID>", …]
 }
 ```
-Object Code: 01
+Object Code: Z1
 
 
 ## Session
@@ -248,7 +248,7 @@ Object Code: 01
 	"expires_at": "<date>"
 }
 ```
-Object Code: 02
+Object Code: Z2
 
 
 ## User
@@ -258,12 +258,10 @@ Object Code: 02
 	"name": HumanName,
 	"email": "<string>",
 	"system": "<string, SystemUser object ID>",
-	"verified": Boolean,
-	"no_password": Boolean,
-	"date_of_birth": <string>
+	"verified": Boolean
 }
 ```
-Object Code: 03
+Object Code: Z3
 
 <u>Field Validations:</u>
 <table>
@@ -294,20 +292,12 @@ Object Code: 03
         	<td>"verified"</td>
         	<td>optional, Boolean, defaults to false</td>
         </tr>
-        <tr>
-            <td>"no_password"</td>
-            <td>optional, Boolean</td>
-        </tr>
-        <tr>
-        	<td>"date_of_birth"</td>
-        	<td>required, string, RFC3336</td>
-        </tr>
 	</tbody>
 </table>
 
 Edges:
 
-1. roles - role objects should be named *Role, for example CustomerRole, AdminRole.
+1. roles - role objects should be named *Role, for example CustomerRole, AdminRole*.
 
 Note: other fields can be added to this object as necessary.
 
@@ -339,7 +329,7 @@ Note: other fields can be added to this object as necessary.
 	"standalone": Boolean, NE, NC
 }
 ```
-Object Code: 06
+Object Code: Z6
 
 <u>Field validations:</u>
 <table>
@@ -409,7 +399,7 @@ Object Code: 06
 	</tbody>
 </table>
 
-Note: This object is used by "file" service and can be omitted in case "file" service is not 
+Note: This object is used by "file" service and can be omitted in case "file" service is not
 deployed.
 
 
@@ -425,7 +415,7 @@ deployed.
 "repeat": "daily | weekly | monthly | yearly", NE
 }
 ```
-Object Code: 07
+Object Code: Z7
 
 <u>Field validations:</u>
 <table>
@@ -477,7 +467,7 @@ Note: This object is used by "scheduler" service and can be omitted in case "sch
 }
 ```
 
-Object Code: 08
+Object Code: Z8
 
 <u>Field validations:</u>
 <table>
@@ -510,7 +500,7 @@ Object Code: 08
 Note: This object is used by "scheduler" service and can be omitted in case "scheduler" service is not deployed.
 
 
-## SecretOrganization 
+## SecretOrganization
 
 ```json
 {
@@ -518,7 +508,7 @@ Note: This object is used by "scheduler" service and can be omitted in case "sch
 	"secret_keys": [{"key": "<string>", "value": "<string>"}, ...]
 }
 ```
-Object Code: 09
+Object Code: Z9
 
 <u>Field validations:</u>
 <table>
@@ -539,4 +529,65 @@ Object Code: 09
 		</tr>
 	</tbody>
 </table>
-   
+
+[TO BE IMPLEMENTED IN V0.2.0]
+
+## MobileClient
+
+```js
+{
+		“object_type”: “mobile_client”,
+		“client_id”: “<string>”,
+		“versions”: [
+						{
+								“index”: <int>,
+								“version”: “<string>”,
+								“update_mode”: “now | period | recommended”,
+								“force_update_at”: “<string, RFC3339>”
+						}						
+		]				
+}
+```
+
+Object Code: ZA
+
+Field validations:
+
+<table>
+	<thead>
+		<tr>
+			<th>Field</th>
+			<th>Restrictions</th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			<td>"object_type"</td>
+			<td>required, string</td>
+		</tr>
+		<tr>
+			<td>"client_id"</td>
+			<td>required, string</td>
+		</tr>
+		<tr>
+			<td>"versions"</td>
+			<td>optional, array of struct</td>
+		</tr>
+		<tr>
+			<td>“versions.version”</td>
+			<td>required, string</td>
+		</tr>
+		<tr>
+			<td>“versions.index"</td>
+			<td>required, int</td>
+		</tr>
+		<tr>
+			<td>“versions.update_mode”</td>
+			<td>required, string, value set</td>
+		</tr>
+		<tr>
+			<td>“versions.force_update_at”</td>
+			<td>optional, string, RFC3339</td>
+		</tr>
+	</tbody>
+</table>
