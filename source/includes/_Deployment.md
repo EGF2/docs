@@ -4,11 +4,11 @@
 
 These two topics are pretty broad. There are different systems that are available in this area which can be utilized with EGF2 with some additional effort. Out of the box, config management and service discovery are organized as follows.
 
-There is a single required parameter for each service to start - "config". This parameter should hold a URL pointing to a reachable location with a JSON config file for the service. When service is started it downloads config file. In case config file is not reachable the service will die with an error message. 
+There is a single required parameter for each service to start - "config". This parameter should hold a URL pointing to a reachable location with a JSON config file for the service. When service is started it downloads config file. In case config file is not reachable the service will die with an error message.
 
 Config files for services can be stored in S3 bucket or any other convenient location reachable by services. Services are not checking whether config has changed or not. In order to apply changes in config to a set of services sysops person will have to restart a service or restart an instance that runs the service.
 
-We strive to minimize inter service dependencies, it is a conscious architectural choice. There are some dependencies though, listed in the table below.
+We strive to minimize inter service dependencies as a conscious architectural choice. There are some dependencies though, listed in the table below.
 
 <table>
 	<thead>
@@ -57,7 +57,7 @@ We strive to minimize inter service dependencies, it is a conscious architectura
 	</tbody>
 </table>
 
-In case a service should talk to another service (e.g. **client-api** talks to **auth** and almost all services talk to **client-data**) it will support an option in config file that will point to a URL for the required service. We don’t support multiple URLs pointing to a single service at the moment. 
+In case a service should talk to another service (e.g. **client-api** talks to **auth** and almost all services talk to **client-data**) it will support an option in config file that will point to a URL for the required service. We don’t support multiple URLs pointing to a single service at the moment.
 
 In order to make a particular service fault tolerant and scalable we recommend the following AWS based setup:
 
@@ -108,6 +108,3 @@ TODO
 
 ## Big Data Mode
 TODO
-
-
-

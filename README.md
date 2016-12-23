@@ -104,3 +104,7 @@ Special Thanks
 - [middleman-syntax](https://github.com/middleman/middleman-syntax)
 - [middleman-gh-pages](https://github.com/edgecase/middleman-gh-pages)
 - [Font Awesome](http://fortawesome.github.io/Font-Awesome/)
+
+# EGF2 Documentation
+
+EGF2 documentation, done with [Slate](https://github.com/lord/slate).

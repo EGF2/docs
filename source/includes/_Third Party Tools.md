@@ -73,6 +73,7 @@ Event table contains events for objects and edges.
 }
 ```
 
+
 Unique table contains field’s values. There is only id field with <object_type>-<field>-<value> record.
 
 ## Cassandra Data Structures
@@ -87,6 +88,7 @@ CREATE TABLE objects (
     PRIMARY KEY (type, id)
 );
 ```
+<<<<<<< HEAD
 
 Unique table
 
