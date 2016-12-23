@@ -284,6 +284,26 @@ Results are returned in paginated format, the same as results for getting edges.
 
 ACL rules are applied to the search results in the same way as they are applied to the results of graph API get edge requests.
 
+##### Miscellaneous
+
+[TO BE IMPLEMENTED IN V0.2.0]
+
+Mobile client applications can use app version endpoint by calling GET /v1/version?app_id=<some app ID>&version=<current installed version of the app>. Server will respond with JSON:
+
+{
+	“latest”: “<string>”, // latest available version of the app
+	“update_mode”: “now | period | recommended”,
+	“force_update_at”: “<string, RFC3339>”
+}
+
+This endpoint can be called by client apps once per day. Received JSON should be interpreted as follows:
+In case “latest” string is equal to the current installed version of the app fields “update_mode” and “force_update_at” will not be present. No action is required
+In case “update_mode” is present and equal to “now” the app should display a message to the user. When message is read the app should quit
+In case “update_mode” is equal to “period” the app should display a message informing the user that the app should be updated before “force_update_at” date. After message is presented the app should continue as usual.
+In case “update_mode” is “recommended” the app should display a message and them continue as usual.
+
+**client-api** should use “graph/objects” section of client-data config in order to obtain references to MobileClient objects. These objects should be used in order to answer client requests.
+
 ### Config
 
 ```
@@ -539,6 +559,47 @@ Jobs are implemented as handlers in **logic** service. In order to implement a r
 
 ## pusher
 Is responsible for reacting to events by sending notifications using various mechanisms, be it WebSockets, emails, SMS, native mobile push notifications etc.
+
+[TO BE SUPPORTED IN V0.2.0]
+
+Client applications can subscribe for notifications based on:
+Object ID
+Particular edge, represented as source object ID / edge name pair
+
+In order to subscribe for notifications please send the following JSON via WebSockets connection:
+
+```js
+{
+		“subscribe”: [
+				{ “object_id”: “<string>” },
+				{ “edge”:
+						{
+						“source”: “<string>”,
+								“name”: “<string>”
+						}
+				}				
+		]			
+}
+```
+Subscription that is mentioned in the message will be added to the list of subscriptions for this client.
+
+It is also possible to cancel subscription for an object or an edge:
+
+```js
+{
+	“unsubscribe”: [
+			{ “object_id”: “<string>” },
+			{ “edge”:
+					{
+					“source”: “<string>”,
+						“name”: “<string>”
+					}
+			}
+	]
+}
+```
+
+Note: In case connection is dropped all subscriptions are lost. When connection is restored client should renew subscriptions.
 
 ### Internal Endpoints
 
