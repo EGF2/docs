@@ -17,7 +17,6 @@
 	</thead>
 	<tbody>
 		<tr>
-<<<<<<< HEAD
 			<td ROWSPAN=4>File</b></td>
 			<td>file</td>
 			<td>File</td>
