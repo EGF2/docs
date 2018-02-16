@@ -2,6 +2,9 @@
 
 We will list all services that are present in the framework. For each service we will show public and internal endpoints, config parameters and extension points. Not all of the services will have something in all of the subsections. By "extension points" we mean an intended way of extending framework functionality. For example, all **logic** rules will be provided by clients using extension point. Internal endpoints are to be used by services, they are not exposed to the Internet, public endpoints are exposed to the Internet.
 
+All services might be configured with config.json file, which provides default config settings. Another way is to use environment variables (env vars). Env vars are stored in .env file in the root of the service and overlap the parameters from config.json file. Please, pay attention to the fact that env vars have precedence over config.json.
+Also, please note env vars prefix "egf_" which allows to isolate env vars of the particular service from variables of deployment environment.
+
 ## client-data
 
 This service will serve as a focal point for data exchange in the system. As all events in the system will have to go through **client-data** it should be fast, simple and horizontally scalable. It should be able to support all graph operations from either cache or data store.
@@ -46,7 +49,8 @@ None
 	"rethinkdb": { // RethinkDB config, should be present in case "storage" is equal to "rethinkdb". For more info on supported parameters please see RethinkDBDash driver docs. Parameters specified here are passed to the driver as is, without modifications.
 		"host": "localhost",
 		"db": "eigengraph"
-	}
+	},
+	"queue": "rethinkdb", // For single instance only! For scalable solutions use kafka.
 	"graph": { // graph config section, contains info on all objects, edges, ACLs and validations in the system
 		"custom_schemas": {
 			"address": {
@@ -112,6 +116,18 @@ None
   	}
 }
 ```
+By default the next env vars are provided:
+
+```
+egf_port = 8000
+egf_log_level = info
+egf_storage = rethinkdb
+egf_cassandra = { "contactPoints": ["localhost"], "keyspace": "eigengraph"}
+egf_rethinkdb = { "host": "localhost", "db": "eigengraph" }
+egf_queue = rethinkdb
+egf_kafka = { "hosts": ["localhost:9092"], "client-id": "client-data", "topic": "events" }
+```
+
 Please note that for brevity sake we are not showing the full client-data configuration here, <a href="https://github.com/egf2">see it on GitHub</a>.
 
 Object declaration can contain “volatile” boolean field. In case it is set to true objects of this type will be physically removed from a DB upon deletion. Otherwise DELETE requests mark objects with “deleted_at”, objects are not physically removed from the DB.
@@ -318,6 +334,15 @@ In case “update_mode” is “recommended” the app should display a message 
 }
 ```
 
+Default env vars for this service:
+
+```
+egf_port = 2019
+egf_auth = "http://localhost:2016"
+egf_client-data = "http://localhost:8000"
+egf_elastic = { "hosts": ["localhost:9200"] }
+```
+
 ### Extension Points
 #### Custom ACL rule
 
@@ -445,6 +470,16 @@ None
 	"kafka": {} // TODO Kafka parameters
 }
 ```
+Default env vars:
+
+```
+egf_log_level = info
+egf_client-data = "http://localhost:8000"
+egf_queue = rethinkdb
+egf_rethinkdb = { "host": "localhost", "port": "28015", "db": "eigengraph", "table": "events", "offsettable": "event_offset" }
+egf_kafka = { "hosts": ["localhost:9092"], "client-id": "sync", "topic": "events" }
+```
+
 "elastic" section contains info on ES indexes and global ES settings. It is possible to specify ES settings on the index level using "settings" field. We take "settings" content without modifications and apply settings to ES.
 
 **sync** supports automatic and custom index processing, for the brevity sake we will use "automatic index" and "custom index" terms to identify type of processing going forward.
@@ -511,6 +546,15 @@ None
 	},
 	"kafka": {} // TODO Kafka parameters
 }
+```
+Default env vars:
+
+```
+egf_log_level = info
+egf_client-data = "http://127.0.0.1:8000/"
+egf_queue = rethinkdb
+egf_rethinkdb = { "host": "localhost", "port": "28015", "db": "eigengraph", "table": "events", "offsettable": "event_offset" }
+egf_kafka = { "hosts": ["localhost:9092"], "client-id": "logic", "topic": "events" }
 ```
 
 ### Extension Points
@@ -627,7 +671,7 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 ```
 {
 	"port": 2017,
-	"web_socket_port": 80,
+	"web_socket_port": 2000,
 	"email_transport": "sendgrid",
 	"log_level": "debug | info | warning",
 	"client-data": "<URL pointing to client-data service>",
@@ -646,6 +690,20 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 	"kafka": {} // TODO Kafka parameters
 }
 ```
+Default env vars:
+
+```
+egf_port = 2017
+egf_web_socket_port = 2000
+egf_email_transport = sendgrid
+egf_log_level = info
+egf_client-data = "http://localhost:8000"
+egf_auth = "http://127.0.0.1:2016",
+egf_queue = rethinkdb
+egf_rethinkdb = { "db": "eigengraph", "table": "events", "offsettable": "event_offset" }
+egf_kafka = { "hosts": ["localhost: 9092"], "client-id": "pusher", "topic": "events" }
+```
+
 ### Extension Points
 #### Email Template
 
@@ -743,9 +801,24 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	"log_level": "debug | info | warning",
 	"pusher": "http://localhost:2017",
 	"client-data": "<URL pointing to client-data service>",
-  	"email_from": "<email from which notifications should be sent>"
+  	"email_from": "<email from which notifications should be sent>",
+  	"elastic": {
+    	"hosts": ["localhost:9200"]
+  	}
 }
 ```
+Default env vars:
+
+```
+egf_port = 2016
+egf_session_lifetime = 86400,
+egf_log_level = "debug"
+egf_client-data = "http://127.0.0.1:8000/"
+egf_pusher = "http://localhost:2017"
+egf_email_from = ""
+egf_elastic =  { "hosts": ["localhost:9200"] }
+```
+
 ### Extension Points
 None
 
@@ -815,6 +888,18 @@ Client / server interactions:
     		]
   	}
 }
+```
+
+Default env vars:
+
+```
+egf_port = 2018
+egf_auth = "http://127.0.0.1:2016"
+egf_client-data = "http://127.0.0.1:8000/"
+egf_queue = rethinkdb
+egf_rethinkdb = { "host": "localhost", "port": "28015", "db": "eigengraph", "table": "events", "offsettable": "event_offset" }
+egf_kafka = { "hosts": ["localhost:9092"], "client-id": "file", "topic": "events" }, "elastic": { "hosts": ["localhost:9200"] }
+egf_elastic = { "hosts": ["localhost:9200"] }
 ```
 
 ### Extension Points
