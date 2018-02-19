@@ -2,7 +2,7 @@
 
 We will list all services that are present in the framework. For each service we will show public and internal endpoints, config parameters and extension points. Not all of the services will have something in all of the subsections. By "extension points" we mean an intended way of extending framework functionality. For example, all **logic** rules will be provided by clients using extension point. Internal endpoints are to be used by services, they are not exposed to the Internet, public endpoints are exposed to the Internet.
 
-All services might be configured with config.json file, which provides default config settings. Another way is to use environment variables (env vars). Env vars are stored in .env file in the root of the service and overlap the parameters from config.json file. Please, pay attention to the fact that env vars have precedence over config.json.
+All services might be configured with config.json file, which provides default config settings. Another way is to use environment variables (env vars). Please, pay attention to the fact that env vars have precedence over config.json.
 Also, please note env vars prefix "egf_" which allows to isolate env vars of the particular service from variables of deployment environment.
 
 ## client-data
@@ -116,7 +116,7 @@ None
   	}
 }
 ```
-By default the next env vars are provided:
+List of vars with default values is as follows:
 
 ```
 egf_port = 8000
@@ -334,7 +334,7 @@ In case “update_mode” is “recommended” the app should display a message 
 }
 ```
 
-Default env vars for this service:
+List of vars with default values is as follows:
 
 ```
 egf_port = 2019
@@ -470,7 +470,7 @@ None
 	"kafka": {} // TODO Kafka parameters
 }
 ```
-Default env vars:
+List of vars with default values is as follows:
 
 ```
 egf_log_level = info
@@ -547,7 +547,7 @@ None
 	"kafka": {} // TODO Kafka parameters
 }
 ```
-Default env vars:
+List of vars with default values is as follows:
 
 ```
 egf_log_level = info
@@ -690,7 +690,7 @@ pusher exposes a WebSocket endpoint `/v1/listen`. Connection to the endpoint has
 	"kafka": {} // TODO Kafka parameters
 }
 ```
-Default env vars:
+List of vars with default values is as follows:
 
 ```
 egf_port = 2017
@@ -807,7 +807,7 @@ In order to **resend** email with user’s email address verification `POST /v1/
   	}
 }
 ```
-Default env vars:
+List of vars with default values is as follows:
 
 ```
 egf_port = 2016
@@ -890,7 +890,7 @@ Client / server interactions:
 }
 ```
 
-Default env vars:
+List of vars with default values is as follows:
 
 ```
 egf_port = 2018
